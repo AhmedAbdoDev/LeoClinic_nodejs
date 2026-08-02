@@ -9,7 +9,6 @@ const DoctorProfileSchema = new Schema(
     },
     price: { type: Number, required: true },
     bio: String,
-    contact_number: { type: String, required: true },
     locations: [
       {
         type: Schema.Types.ObjectId,
@@ -23,7 +22,6 @@ const DoctorProfileSchema = new Schema(
 
 const PatientProfileSchema = new Schema(
   {
-    contact_number: { type: String, required: true },
     date_of_birth: { type: Date, required: true },
     address: { type: String, required: true },
   },
@@ -46,6 +44,7 @@ const UserSchema = new Schema(
       enum: ["admin", "doctor", "patient"],
       required: true,
     },
+    contact_number: { type: String, required: true },
     doctorProfile: {
       type: DoctorProfileSchema,
       required() {
@@ -58,6 +57,7 @@ const UserSchema = new Schema(
         return this.role === "patient";
       },
     },
+    is_verified: { type: Boolean, default: false },
     is_blocked: { type: Boolean, default: false },
   },
   { timestamps: true, versionKey: false },
