@@ -12,13 +12,12 @@ export async function createSpecialty(req, res, next) {
 }
 
 export async function getAllSpecialties(req, res, next) {
+  const specialties = await adminService.getAllSpecialties();
 
-    const specialties = await adminService.getAllSpecialties();
-
-    return res.status(200).json({
-      success: true,
-      data: specialties,
-    });
+  return res.status(200).json({
+    success: true,
+    data: specialties,
+  });
 }
 
 export async function getSpecialtiesById(req, res, next) {

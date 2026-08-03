@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+
 import User from "../../models/user.model.js";
 import Specialty from "../../models/specialty.model.js";
 import Session from "../../models/session.model.js";
@@ -10,35 +11,32 @@ import {
   generateSecurityToken,
   hashToken,
 } from "../../utils/jwt.js";
-import { dummyHash, TOKEN_EXPIRATION } from "./auth.constants.js";
+import { dummyHash, TOKEN_EXPIRATION, TOKEN_TYPES } from "./auth.constants.js";
+import { sendEmailVerification, sendPasswordReset } from "./auth.helper.js";
+
 const register = async ({ data }) => {
-  // if (data?.role === "doctor") {
-  //   const specialty = await Specialty.findById(
-  //     data?.doctorProfile?.specialty_id,
-  //   );
-  //   if (!specialty || !specialty.isActive || specialty.isDeleted)
-  //     throw new AppError("Invalid specialtyId", 400);
-  // }
+  if (data?.role === "doctor") {
+    const specialty = await Specialty.findById(
+      data?.doctorProfile?.specialty_id,
+    );
+    if (!specialty || !specialty.isActive || specialty.isDeleted)
+      throw new AppError("Invalid specialtyId", 400);
+  }
   const hashedPassword = await bcrypt.hash(data.password, 12);
 
-  const { rawToken, hashedToken } = generateSecurityToken();
-
-  console.log(rawToken, hashedToken);
+  let user;
 
   try {
-    const user = await User.create({ ...data, password: hashedPassword });
-
-    const userToken = await verificationCodeModel.create({
-      user_id: user._id,
-      type: "email_verification",
-      token: hashedToken,
-      expires_at: new Date(Date.now() + 10 * 60 * 1000),
+    user = await User.create({
+      ...data,
+      password: hashedPassword,
     });
   } catch (error) {
     if (error?.code === 11000) throw new AppError("Email already exists", 409);
+
     throw error;
   }
-  // send email with rawToken to user.email for verification logic here
+  await sendEmailVerification(user);
   return {
     message: "User registered successfully. Please verify your email.",
   };
@@ -49,7 +47,7 @@ const verifyEmail = async ({ token }) => {
   const tokenRecord = await verificationCodeModel
     .findOne({
       token: hashedToken,
-      type: "email_verification",
+      type: TOKEN_TYPES.email_verification,
       expires_at: {
         $gt: new Date(),
       },
@@ -66,7 +64,7 @@ const verifyEmail = async ({ token }) => {
   await user.save();
   await verificationCodeModel.deleteMany({
     user_id: user._id,
-    type: "email_verification",
+    type: TOKEN_TYPES.email_verification,
   });
   return {
     success: true,
@@ -83,8 +81,13 @@ const login = async ({ data }) => {
 
   if (!user || !isMatch) throw new AppError("Invalid email or password", 401);
 
-  if (!user.is_verified)
-    throw new AppError("Please verify your email first.", 403);
+  if (!user.is_verified) {
+    await sendEmailVerification(user);
+    throw new AppError(
+      "Email is not verified. A verification email has been sent if needed.",
+      403,
+    );
+  }
 
   if (user.is_blocked)
     throw new AppError("Your account has been blocked.", 403);
@@ -127,6 +130,18 @@ const logout = async ({ sessionId }) => {
   if (!result.matchedCount) throw new AppError("Unauthorized", 401);
 
   return true;
+};
+
+const resendVerification = async ({ email }) => {
+  const user = await User.findOne({ email });
+
+  if (user) {
+    if (user.is_verified) throw new AppError("Email already verified.", 400);
+    await sendEmailVerification(user);
+  }
+  return {
+    message: "If an account exists, a verification email has been sent.",
+  };
 };
 
 const refreshToken = async ({ refreshToken }) => {
@@ -178,4 +193,81 @@ const refreshToken = async ({ refreshToken }) => {
     },
   };
 };
-export { register, verifyEmail, login, logout, refreshToken };
+
+const requestPasswordReset = async ({ email }) => {
+  const user = await User.findOne({
+    email,
+    is_blocked: false,
+  });
+
+  if (user) await sendPasswordReset(user);
+
+  return {
+    message: "If an account exists, a password reset email has been sent.",
+  };
+};
+const verifyPasswordResetToken = async ({ token }) => {
+  const hashedToken = hashToken(token);
+
+  const tokenRecord = await verificationCodeModel.exists({
+    token: hashedToken,
+    type: TOKEN_TYPES.password_reset,
+    expires_at: {
+      $gt: new Date(),
+    },
+  });
+
+  if (!tokenRecord)
+    throw new AppError("Invalid or expired password reset token", 400);
+
+  return {
+    message: "Password reset token is valid",
+  };
+};
+const submitNewPassword = async ({ token, newPassword }) => {
+  const hashedToken = hashToken(token);
+
+  const tokenRecord = await verificationCodeModel.findOne({
+    token: hashedToken,
+    type: TOKEN_TYPES.password_reset,
+    expires_at: {
+      $gt: new Date(),
+    },
+  });
+
+  if (!tokenRecord)
+    throw new AppError("Invalid or expired password reset token", 400);
+
+  const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+  await User.updateOne(
+    { _id: tokenRecord.user_id },
+    {
+      password: hashedPassword,
+    },
+  );
+
+  await Session.deleteMany({
+    user_id: tokenRecord.user_id,
+  });
+
+  await verificationCodeModel.deleteMany({
+    user_id: tokenRecord.user_id,
+    type: TOKEN_TYPES.password_reset,
+  });
+
+  return {
+    message: "Password updated successfully",
+  };
+};
+export {
+  register,
+  verifyEmail,
+  login,
+  resendVerification,
+  logout,
+  refreshToken,
+  requestPasswordReset,
+  verifyPasswordResetToken,
+  submitNewPassword,
+};

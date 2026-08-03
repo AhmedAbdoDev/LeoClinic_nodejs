@@ -30,6 +30,52 @@ const login = async (req, res, next) => {
     data: response,
   });
 };
+const resendVerification = async (req, res) => {
+  const result = await authService.resendVerification({
+    email: req.body.email,
+  });
+
+  res.status(200).json({
+    success: true,
+    ...result,
+  });
+};
+
+const requestPasswordReset = async (req, res) => {
+  const { email } = req.body;
+
+  const result = await authService.requestPasswordReset({ email });
+
+  res.status(200).json({
+    success: true,
+    ...result,
+  });
+};
+
+const verifyPasswordResetToken = async (req, res) => {
+  const { token } = req.query;
+
+  const result = await authService.verifyPasswordResetToken({ token });
+
+  res.status(200).json({
+    success: true,
+    ...result,
+  });
+};
+
+const submitNewPassword = async (req, res) => {
+  const { token, password } = req.body;
+
+  const result = await authService.submitNewPassword({
+    token,
+    newPassword: password,
+  });
+
+  res.status(200).json({
+    success: true,
+    ...result,
+  });
+};
 
 const logout = async (req, res) => {
   await authService.logout({ sessionId: req.auth.sessionId });
@@ -50,4 +96,14 @@ const refreshToken = async (req, res) => {
   });
 };
 
-export { register, verifyEmail, login, logout, refreshToken };
+export {
+  register,
+  verifyEmail,
+  login,
+  requestPasswordReset,
+  verifyPasswordResetToken,
+  submitNewPassword,
+  logout,
+  refreshToken,
+  resendVerification,
+};

@@ -2,7 +2,7 @@ import express from "express";
 import cookieParser from "cookie-parser";
 
 import errorHandler from "./utils/errorHandler.js";
-import specialtyRoutes from "./modules/specialties/specialtyRoute.js";
+import specialtyRoutes from "./modules/specialties/specialty.route.js";
 
 const app = express();
 app.use(express.json());

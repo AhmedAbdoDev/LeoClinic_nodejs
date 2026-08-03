@@ -24,6 +24,7 @@ await User.create({
   password: hashedPassword,
   role: "admin",
   contact_number: "0000000000",
+  is_verified: true,
 });
 
 console.log("Admin created successfully");
