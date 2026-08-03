@@ -1,5 +1,5 @@
 import { success } from "zod";
-import * as adminService from "./admin.service.js";
+import * as adminService from "./specialty.service.js";
 
 export async function createSpecialty(req, res, next) {
   try {
@@ -15,8 +15,6 @@ export async function createSpecialty(req, res, next) {
   }
 }
 
-
-
 export async function getAllSpecialties(req, res, next) {
   try {
     const specialties = await adminService.getAllSpecialties();
@@ -29,8 +27,6 @@ export async function getAllSpecialties(req, res, next) {
     next(error);
   }
 }
-
-
 
 export async function getSpecialtiesById(req, res, next) {
   const id = req.params.id;
@@ -46,8 +42,6 @@ export async function getSpecialtiesById(req, res, next) {
   }
 }
 
-
-
 export async function delSpecialtiesById(req, res, next) {
   const id = req.params.id;
 
@@ -62,8 +56,6 @@ export async function delSpecialtiesById(req, res, next) {
     next(err);
   }
 }
-
-
 
 export async function updateSpecialtiesById(req, res, next) {
   const id = req.params.id;

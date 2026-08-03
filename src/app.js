@@ -2,7 +2,7 @@ import express from "express";
 import cookieParser from "cookie-parser";
 
 import errorHandler from "./utils/errorHandler.js";
-import adminRoutes from "./modules/admin/adminRoutes.js";
+import specialtyRoutes from "./modules/specialties/specialtyRoute.js";
 
 const app = express();
 app.use(express.json());
@@ -13,7 +13,7 @@ import authRoutes from "./modules/auth/auth.route.js";
 
 app.use("/api/health", healthRoutes);
 app.use("/api/auth", authRoutes);
-app.use("/api/admin", adminRoutes);
+app.use("/api/specialties", specialtyRoutes);
 
 app.use(errorHandler);
 export default app;

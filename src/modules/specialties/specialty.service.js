@@ -35,6 +35,9 @@ export async function getSpecialtiesById(id) {
     _id: id,
     isDeleted: false,
   });
+    if (!specialtyId) {
+    throw new AppError("not found", 404);
+  }
 
   return specialtyId;
 }
