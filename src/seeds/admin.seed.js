@@ -23,6 +23,7 @@ await User.create({
   email: "admin@example.com",
   password: hashedPassword,
   role: "admin",
+  contact_number: "0000000000",
 });
 
 console.log("Admin created successfully");
