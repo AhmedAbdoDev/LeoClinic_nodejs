@@ -59,6 +59,9 @@ export async function delSpecialtiesById(id) {
 }
 
 export async function updateSpecialtiesById(data, id) {
+  if (Object.keys(data).length === 0) {
+    throw new BadRequestError("At least one field is required");
+  }
   const { name, description } = data;
 
   const specialty = await Specialty.findOne({
@@ -82,8 +85,9 @@ export async function updateSpecialtiesById(data, id) {
     specialty.name = name.trim();
   }
 
-  description !== undefined ? (specialty.description = description) : "";
-
+  if (description !== undefined) {
+    specialty.description = description;
+  }
   await specialty.save();
 
   return specialty;
