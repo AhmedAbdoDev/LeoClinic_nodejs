@@ -6,7 +6,10 @@ import {
 } from "../../middlewares/auth.middleware.js";
 import { validate } from "../../middlewares/validate.middleware.js";
 
-import { createSpecialtySchema } from "./specialty.validation.js";
+import {
+  createSpecialtySchema,
+  updateSpecialtySchema,
+} from "./specialty.validation.js";
 import { createSpecialty } from "./specialty.controller.js";
 import {
   getAllSpecialties,
@@ -37,6 +40,7 @@ specialtyRoutes.delete(
 specialtyRoutes.patch(
   "/:id",
   authMiddleware,
+  validate(updateSpecialtySchema),
   authorize("admin"),
   updateSpecialtiesById,
 );

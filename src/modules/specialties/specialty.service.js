@@ -28,14 +28,12 @@ export async function getAllSpecialties() {
   return specialties;
 }
 
-
-
 export async function getSpecialtiesById(id) {
   const specialtyId = await Specialty.findOne({
     _id: id,
     isDeleted: false,
   });
-    if (!specialtyId) {
+  if (!specialtyId) {
     throw new AppError("not found", 404);
   }
 
@@ -60,24 +58,33 @@ export async function delSpecialtiesById(id) {
   return deleteById;
 }
 
-
-
 export async function updateSpecialtiesById(data, id) {
   const { name, description } = data;
 
-  const exists = await Specialty.findOne({
+  const specialty = await Specialty.findOne({
     _id: id,
     isDeleted: false,
   });
 
-  if (!exists) {
-    throw new AppError("not found", 404);
+  if (!specialty) {
+    throw new AppError("Specialty not found", 404);
+  }
+  if (name) {
+    const isexist = await Specialty.findOne({
+      name: name.trim(),
+      _id: { $ne: id },
+    });
+
+    if (isexist) {
+      throw new AppError("Specialty already exists", 409);
+    }
+
+    specialty.name = name.trim();
   }
 
-  exists.name = name;
-  exists.description = description;
+  description !== undefined ? (specialty.description = description) : "";
 
-  await exists.save();
+  await specialty.save();
 
-  return exists;
+  return specialty;
 }
