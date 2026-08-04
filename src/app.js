@@ -14,14 +14,15 @@ import approveRouter from "./modules/DoctorApprove/approveRoute.js";
 import userRoutes from "./modules/users/user.route.js";
 import patientRoutes from "./modules/patients/patient.route.js";
 
+import doctorRoutes from "./modules/doctors/doctor.route.js";
 
+app.use("/api/doctors", doctorRoutes);
 app.use("/api/health", healthRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/specialties", specialtyRoutes);
 app.use("/api/doctors", approveRouter);
 app.use("/api/users", userRoutes);
 app.use("/api/patients", patientRoutes);
-
 
 app.use(errorHandler);
 export default app;
