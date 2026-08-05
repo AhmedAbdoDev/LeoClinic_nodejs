@@ -1,9 +1,10 @@
 import User from '../../models/User.model.js';
+import AppError from '../../error/AppError.js';
 
 export const updateUserBasicInfo = async (userId, updateData) => {
   const user = await User.findById(userId);
   if (!user) {
-    throw new Error('User not found');
+    throw new AppError('User not found', 404);
   }
 
   if (updateData.name) user.name = updateData.name;
