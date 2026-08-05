@@ -1,17 +1,20 @@
-import { Router } from 'express';
-import { authMiddleware, authorize } from '../../middlewares/auth.middleware.js';
-import { validate } from '../../middlewares/validation.middleware.js';
-import { updatePatientSchema } from './patient.validation.js';
-import { updateMyPatientInfo } from './patient.controller.js';
+import { Router } from "express";
+import {
+  authMiddleware,
+  authorize,
+} from "../../middlewares/auth.middleware.js";
+import { validate } from "../../middlewares/validate.middleware.js";
+import { updatePatientSchema } from "./patient.validation.js";
+import { updateMyPatientInfo } from "./patient.controller.js";
 
 const router = Router();
 
 router.patch(
-  '/me',
+  "/me",
   authMiddleware,
-  authorize('patient'),
+  authorize("patient"),
   validate(updatePatientSchema),
-  updateMyPatientInfo
+  updateMyPatientInfo,
 );
 
 export default router;

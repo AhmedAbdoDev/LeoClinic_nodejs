@@ -1,4 +1,3 @@
-// src/modules/doctors/doctor.route.js
 import { Router } from "express";
 import {
   authMiddleware,
@@ -17,6 +16,9 @@ import {
   defineAvailability,
   updateAvailability,
   deleteAvailabilitySlot,
+  updateProfile,
+  addLocation,
+  removeLocation,
 } from "./doctor.controller.js";
 
 const router = Router();

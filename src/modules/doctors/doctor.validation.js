@@ -3,6 +3,14 @@ import mongoose from "mongoose";
 import { DAYS, SLOT_RULES } from "./doctor.constants.js";
 import { timeToMinutes } from "../../utils/time.js";
 
+const phoneRegex = /^(\+20|0)?1[0125][0-9]{8}$/;
+
+const phoneSchema = z
+  .string({
+    required_error: "Contact number is required",
+  })
+  .regex(phoneRegex, "Invalid phone number");
+
 const objectIdSchema = (fieldName) =>
   z
     .string({ required_error: `${fieldName} is required` })
