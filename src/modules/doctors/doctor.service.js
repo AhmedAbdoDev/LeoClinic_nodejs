@@ -3,6 +3,7 @@ import AppError from "../../error/AppError.js";
 import User from "../../models/user.model.js";
 import Specialty from "../../models/specialty.model.js";
 import Location from "../../models/location.model.js";
+import { uploadImage } from "../../services/cloudinary.service.js";
 
 const generateSlots = ({ start_time, end_time, slot_duration_minutes }) => {
   const slots = [];
@@ -204,4 +205,37 @@ export const removeDoctorLocation = async ({ doctorId, locationId }) => {
   if (!updatedUser) throw new AppError("Doctor not found", 404);
 
   return updatedUser;
+};
+
+export const uploadLicenseCertificate = async ({ doctorId, file }) => {
+  if (!file) throw new AppError("License certificate is required", 400);
+
+  const doctor = await User.findById(doctorId);
+
+  if (!doctor) throw new AppError("User not found", 404);
+  const oldImage = doctor.doctorProfile?.license_certificate?.public_id;
+  if (oldImage)
+    throw new AppError(
+      "You have already uploaded your license certificate.",
+      400,
+    );
+
+  if (doctor.doctorProfile.approval_status !== "pending_license")
+    throw new AppError(
+      "Your account is no longer awaiting a license upload.",
+      400,
+    );
+  const uploadedImage = await uploadImage(file.buffer, "doctor-certificates");
+  doctor.doctorProfile.license_certificate = {
+    url: uploadedImage.url,
+    public_id: uploadedImage.publicId,
+  };
+
+  doctor.doctorProfile.approval_status = "pending";
+
+  await doctor.save();
+
+  return {
+    message: "License certificate uploaded successfully",
+  };
 };

@@ -2,7 +2,10 @@ import { clearRefreshCookie, setRefreshCookie } from "../../utils/jwt.js";
 import * as authService from "./auth.service.js";
 
 const register = async (req, res, next) => {
-  const user = await authService.register({ data: req.body });
+  const user = await authService.register({
+    data: req.body,
+    file: req.file,
+  });
   res.json({
     success: true,
     ...user,

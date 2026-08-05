@@ -9,6 +9,10 @@ const DoctorProfileSchema = new Schema(
     },
     price: { type: Number, required: true },
     bio: String,
+    license_certificate: {
+      url: String,
+      public_id: String,
+    },
     locations: [
       {
         type: Schema.Types.ObjectId,
@@ -17,8 +21,8 @@ const DoctorProfileSchema = new Schema(
     ],
     approval_status: {
       type: String,
-      enum: ["approved", "pending", "rejected"],
-      default: "pending",
+      enum: ["pending_license", "pending", "approved", "rejected"],
+      default: "pending_license",
       required: true,
     },
   },

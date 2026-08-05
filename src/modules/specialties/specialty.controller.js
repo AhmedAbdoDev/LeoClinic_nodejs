@@ -60,12 +60,12 @@ export async function getAllDeletedSpecialties(req, res) {
   });
 }
 export async function restoreDeletedSpecialties(req, res) {
-    const id = req.params.id;
+  const id = req.params.id;
   const restored = await adminService.restoreDeletedSpecialties(id);
 
   return res.status(200).json({
     success: true,
-    message:"restored successfully",
+    message: "restored successfully",
     data: restored,
   });
 }

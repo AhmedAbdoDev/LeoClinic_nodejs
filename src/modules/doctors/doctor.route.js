@@ -19,7 +19,9 @@ import {
   updateProfile,
   addLocation,
   removeLocation,
+  uploadLicenseCertificate,
 } from "./doctor.controller.js";
+import { upload } from "../../middlewares/upload.middleware.js";
 
 const router = Router();
 
@@ -69,6 +71,14 @@ router.delete(
   authorize("doctor"),
   validate(removeDoctorLocationSchema),
   removeLocation,
+);
+
+router.post(
+  "/license",
+  authMiddleware,
+  authorize("doctor"),
+  upload.single("license_certificate"),
+  uploadLicenseCertificate,
 );
 
 export default router;

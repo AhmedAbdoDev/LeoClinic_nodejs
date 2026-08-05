@@ -23,9 +23,7 @@ const register = async ({ data }) => {
       throw new AppError("Invalid specialtyId", 400);
   }
   const hashedPassword = await bcrypt.hash(data.password, 12);
-
   let user;
-
   try {
     user = await User.create({
       ...data,
@@ -33,7 +31,6 @@ const register = async ({ data }) => {
     });
   } catch (error) {
     if (error?.code === 11000) throw new AppError("Email already exists", 409);
-
     throw error;
   }
   await sendEmailVerification(user);
