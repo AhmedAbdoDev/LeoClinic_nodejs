@@ -16,3 +16,41 @@ export const updateUserBasicInfo = async (userId, updateData) => {
   delete userObj.password;
   return userObj;
 };
+
+export const getUsers = async (filters) => {
+  const { search, role, page, limit } = filters;
+
+  const query = {};
+
+  if (role) {
+    query.role = role;
+  }
+
+  if (search) {
+    query.$or = [
+      { name: { $regex: search, $options: 'i' } },
+      { email: { $regex: search, $options: 'i' } },
+    ];
+  }
+
+  const skip = (page - 1) * limit;
+
+  const [users, total] = await Promise.all([
+    User.find(query)
+      .select('-password')
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 }),
+    User.countDocuments(query),
+  ]);
+
+  return {
+    users,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+};
