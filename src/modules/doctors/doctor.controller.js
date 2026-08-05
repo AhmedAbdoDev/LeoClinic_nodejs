@@ -79,3 +79,15 @@ export const removeLocation = async (req, res) => {
     data: updatedUser,
   });
 };
+
+export const uploadLicenseCertificate = async (req, res) => {
+  const result = await doctorService.uploadLicenseCertificate({
+    doctorId: req.user._id,
+    file: req.file,
+  });
+
+  res.status(200).json({
+    success: true,
+    ...result,
+  });
+};
