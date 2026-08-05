@@ -15,7 +15,12 @@ const DoctorProfileSchema = new Schema(
         ref: "Location",
       },
     ],
-    is_approved: { type: Boolean, default: false },
+    approval_status: {
+      type: String,
+      enum: ["approved", "pending", "rejected"],
+      default: "pending",
+      required: true,
+    },
   },
   { _id: false },
 );

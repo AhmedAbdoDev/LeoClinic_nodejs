@@ -5,31 +5,27 @@ export async function approveDoctor(id) {
   const doctor = await User.findOne({
     _id: id,
     role: "doctor",
-    is_blocked: false,
+    "doctorProfile.approval_status": "pending",
   });
   if (!doctor) {
     throw new AppError("doctor not found", 404);
   }
-  if (doctor.doctorProfile.is_approved) {
-    throw new AppError("Doctor is already approved", 309);
-  }
-  doctor.doctorProfile.is_approved = true;
-  doctor.save();
+
+  doctor.doctorProfile.approval_status = "approved";
+  await doctor.save();
   return doctor;
 }
 export async function rejectDoctor(id) {
   const doctor = await User.findOne({
     _id: id,
     role: "doctor",
-    is_blocked: false,
+    "doctorProfile.approval_status": "pending",
   });
   if (!doctor) {
     throw new AppError("doctor not found", 404);
   }
-  if (!doctor.doctorProfile.is_approved) {
-    throw new AppError("Doctor is already not approved", 309);
-  }
-  doctor.doctorProfile.is_approved = false;
-  doctor.save();
+
+  doctor.doctorProfile.approval_status = "rejected";
+  await doctor.save();
   return doctor;
 }
