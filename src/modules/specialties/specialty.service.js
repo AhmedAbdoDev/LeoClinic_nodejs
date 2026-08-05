@@ -27,6 +27,13 @@ export async function getAllSpecialties() {
 
   return specialties;
 }
+export async function getAllDeleSpecialties() {
+  const DeletedSpecialties = await Specialty.find({
+    isDeleted: true,
+  }).sort({ createdAt: -1 });
+
+  return DeletedSpecialties;
+}
 
 export async function getSpecialtiesById(id) {
   const specialtyId = await Specialty.findOne({
@@ -88,6 +95,25 @@ export async function updateSpecialtiesById(data, id) {
   if (description !== undefined) {
     specialty.description = description;
   }
+  await specialty.save();
+
+  return specialty;
+}
+
+export async function restoreDeletedSpecialties(id) {
+  const specialty = await Specialty.findById(id);
+
+  if (!specialty) {
+    throw new AppError("Specialty not found", 404);
+  }
+
+  if (!specialty.isDeleted) {
+    throw new AppError("Specialty is not deleted", 409);
+  }
+
+  specialty.isDeleted = false;
+  specialty.isActive = true;
+
   await specialty.save();
 
   return specialty;

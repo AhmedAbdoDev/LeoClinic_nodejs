@@ -8,6 +8,7 @@ import { validate } from "../../middlewares/validate.middleware.js";
 
 import {
   createSpecialtySchema,
+  IdSchema,
   updateSpecialtySchema,
 } from "./specialty.validation.js";
 import { createSpecialty } from "./specialty.controller.js";
@@ -16,11 +17,30 @@ import {
   getSpecialtiesById,
   delSpecialtiesById,
   updateSpecialtiesById,
+  getAllDeletedSpecialties,
+  restoreDeletedSpecialties,
 } from "./specialty.controller.js";
 
 const specialtyRoutes = Router();
 
 specialtyRoutes.get("/", authMiddleware, getAllSpecialties);
+
+specialtyRoutes.get(
+  "/deleted",
+  authMiddleware,
+  authorize("admin"),
+
+  getAllDeletedSpecialties,
+);
+
+specialtyRoutes.patch(
+  "/:id/restore",
+  authMiddleware,
+  authorize("admin"),
+  validate(IdSchema),
+  restoreDeletedSpecialties,
+);
+
 specialtyRoutes.get("/:id", authMiddleware, getSpecialtiesById);
 
 specialtyRoutes.post(

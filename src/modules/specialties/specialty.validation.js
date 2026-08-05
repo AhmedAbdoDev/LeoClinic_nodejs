@@ -22,3 +22,10 @@ export const updateSpecialtySchema = z.object({
     description: z.string().trim().optional(),
   }),
 });
+
+
+export const IdSchema = z.object({
+  params: z.object({
+    id: z.string().min(1, " ID is required"),
+  }),
+});
