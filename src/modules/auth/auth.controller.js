@@ -98,7 +98,16 @@ const refreshToken = async (req, res) => {
     data: response,
   });
 };
+const me = async (req, res) => {
+  const user = await authService.me({
+    user: req.user,
+  });
 
+  res.json({
+    success: true,
+    data: user,
+  });
+};
 export {
   register,
   verifyEmail,
@@ -109,4 +118,5 @@ export {
   logout,
   refreshToken,
   resendVerification,
+  me,
 };
