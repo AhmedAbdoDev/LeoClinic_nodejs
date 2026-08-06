@@ -6,6 +6,8 @@ import { updateMe, getAllUsers } from './user.controller.js';
 
 const router = Router();
 
+console.log('✅ User routes loaded - PATCH /me is defined');
+
 router.patch('/me', authMiddleware, validate(updateUserSchema), updateMe);
 
 router.get(

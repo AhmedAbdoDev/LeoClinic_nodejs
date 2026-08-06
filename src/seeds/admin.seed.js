@@ -5,7 +5,7 @@ import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import User from "../models/user.model.js";
 
-await mongoose.connect(process.env.MONGODB_URI);
+await mongoose.connect(process.env.MONGO_URL);
 
 const exists = await User.findOne({
   role: "admin",
@@ -16,7 +16,7 @@ if (exists) {
   process.exit();
 }
 
-const hashedPassword = await bcrypt.hash("Admin@123", 10);
+const hashedPassword = await bcrypt.hash("ChangeMe123!", 10);
 
 await User.create({
   name: "Admin",
@@ -28,6 +28,5 @@ await User.create({
 });
 
 console.log("Admin created successfully");
-console.log("📧 Email: admin@example.com");
-console.log("🔑 Password: Admin@123");
+
 process.exit();
