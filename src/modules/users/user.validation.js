@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 export const updateUserSchema = z.object({
   body: z.object({
@@ -10,7 +10,7 @@ export const updateUserSchema = z.object({
 export const getUsersSchema = z.object({
   query: z.object({
     search: z.string().optional(),
-    role: z.enum(["admin", "doctor", "patient"]).optional(),
+    role: z.enum(['admin', 'doctor', 'patient']).optional(),
     page: z.coerce.number().int().positive().default(1),
     limit: z.coerce.number().int().positive().max(100).default(10),
   }),

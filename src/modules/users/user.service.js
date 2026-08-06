@@ -1,15 +1,16 @@
-import User from "../../models/user.model.js";
-import AppError from "../../error/AppError.js";
+import User from '../../models/user.model.js';
+import AppError from '../../error/AppError.js';
 
-export const updateUserBasicInfo = async (userId, updateData) => {
+export const updateUserBasicInfo = async (userId, updateData = {}) => {
   const user = await User.findById(userId);
   if (!user) {
-    throw new AppError("User not found", 404);
+    throw new AppError('User not found', 404);
   }
 
-  if (updateData.name) user.name = updateData.name;
-  if (updateData.contact_number)
+  if (updateData.name !== undefined) user.name = updateData.name.trim();
+  if (updateData.contact_number !== undefined) {
     user.contact_number = updateData.contact_number;
+  }
 
   await user.save();
 
@@ -18,8 +19,8 @@ export const updateUserBasicInfo = async (userId, updateData) => {
   return userObj;
 };
 
-export const getUsers = async (filters) => {
-  const { search, role, page, limit } = filters;
+export const getUsers = async (filters = {}) => {
+  const { search, role, page = 1, limit = 10 } = filters || {};
 
   const query = {};
 
@@ -29,18 +30,20 @@ export const getUsers = async (filters) => {
 
   if (search) {
     query.$or = [
-      { name: { $regex: search, $options: "i" } },
-      { email: { $regex: search, $options: "i" } },
+      { name: { $regex: search, $options: 'i' } },
+      { email: { $regex: search, $options: 'i' } },
     ];
   }
 
-  const skip = (page - 1) * limit;
+  const normalizedPage = Number(page) > 0 ? Number(page) : 1;
+  const normalizedLimit = Number(limit) > 0 ? Number(limit) : 10;
+  const skip = (normalizedPage - 1) * normalizedLimit;
 
   const [users, total] = await Promise.all([
     User.find(query)
-      .select("-password")
+      .select('-password')
       .skip(skip)
-      .limit(limit)
+      .limit(normalizedLimit)
       .sort({ createdAt: -1 }),
     User.countDocuments(query),
   ]);
@@ -49,9 +52,9 @@ export const getUsers = async (filters) => {
     users,
     pagination: {
       total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
+      page: normalizedPage,
+      limit: normalizedLimit,
+      totalPages: Math.ceil(total / normalizedLimit),
     },
   };
 };
