@@ -73,4 +73,5 @@ UserSchema.pre("validate", function () {
   if (this.role === "patient") this.doctorProfile = undefined;
 });
 
-export default model("User", UserSchema);
+const User = model("User", UserSchema);
+export default User;

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware, authorize } from '../../middlewares/auth.middleware.js';
-import { validate } from '../../middlewares/validation.middleware.js';
+import { validate } from '../../middlewares/validate.middleware.js';
 import { updateUserSchema, getUsersSchema } from './user.validation.js';
 import { updateMe, getAllUsers } from './user.controller.js';
 
