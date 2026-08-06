@@ -16,10 +16,14 @@ export const updateUserBasicInfo = async (userId, updateData) => {
 };
 
 export const getUsers = async (filters) => {
-  const { search, role, page = 1, limit = 10 } = filters || {};
+  const { search, role, blocked, page = 1, limit = 10 } = filters || {};
   const query = {};
 
   if (role) query.role = role;
+
+  if (blocked !== undefined) {
+    query.is_blocked = blocked === "true";
+  }
 
   if (search)
     query.$or = [
@@ -49,3 +53,30 @@ export const getUsers = async (filters) => {
     },
   };
 };
+
+export async function blockUserService(id) {
+  const user = await User.findOne({
+    _id: id,
+    is_blocked: false,
+  });
+  if (!user) {
+    throw new AppError("user blocked or not found");
+  }
+  user.is_blocked = true;
+  await user.save();
+
+  return user;
+}
+export async function unblockUserService(id) {
+  const user = await User.findOne({
+    _id: id,
+    is_blocked: true,
+  });
+  if (!user) {
+    throw new AppError("user not blocked or not found");
+  }
+  user.is_blocked = false;
+  await user.save();
+
+  return user;
+}

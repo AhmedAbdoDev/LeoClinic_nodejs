@@ -5,7 +5,12 @@ import {
 } from "../../middlewares/auth.middleware.js";
 import { validate } from "../../middlewares/validate.middleware.js";
 import { updateUserSchema, getUsersSchema } from "./user.validation.js";
-import { updateMe, getAllUsers } from "./user.controller.js";
+import {
+  updateMe,
+  getAllUsers,
+  unblockUser,
+  blockUser,
+} from "./user.controller.js";
 
 const router = Router();
 
@@ -17,6 +22,21 @@ router.get(
   authorize("admin"),
   validate(getUsersSchema),
   getAllUsers,
+);
+
+router.patch(
+  "/:userid/block",
+  authMiddleware,
+  authorize("admin"),
+  validate(getUsersSchema),
+  blockUser,
+);
+router.patch(
+  "/:userid/unblock",
+  authMiddleware,
+  authorize("admin"),
+  validate(getUsersSchema),
+  unblockUser,
 );
 
 export default router;
