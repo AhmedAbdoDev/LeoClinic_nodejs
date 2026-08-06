@@ -4,7 +4,7 @@ import {
   authorize,
 } from "../../middlewares/auth.middleware.js";
 import { validate } from "../../middlewares/validate.middleware.js";
-import { updateUserSchema, getUsersSchema } from "./user.validation.js";
+import { updateUserSchema, getUsersSchema, useridSchema } from "./user.validation.js";
 import {
   updateMe,
   getAllUsers,
@@ -35,7 +35,7 @@ router.patch(
   "/:userid/unblock",
   authMiddleware,
   authorize("admin"),
-  validate(getUsersSchema),
+  validate(useridSchema),
   unblockUser,
 );
 
