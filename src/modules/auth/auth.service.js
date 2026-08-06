@@ -12,7 +12,11 @@ import {
   hashToken,
 } from "../../utils/jwt.js";
 import { dummyHash, TOKEN_EXPIRATION, TOKEN_TYPES } from "./auth.constants.js";
-import { sendEmailVerification, sendPasswordReset } from "./auth.helper.js";
+import {
+  mapUser,
+  sendEmailVerification,
+  sendPasswordReset,
+} from "./auth.helper.js";
 
 const register = async ({ data }) => {
   if (data?.role === "doctor") {
@@ -101,20 +105,11 @@ const login = async ({ data }) => {
     sessionId: session._id,
   });
 
-  const profile =
-    user.role === "doctor" ? user.doctorProfile : user.patientProfile;
-
   return {
     accessToken,
     accessTokenExpiresIn: TOKEN_EXPIRATION.access_token / 1000,
     refreshToken: rawToken,
-    user: {
-      id: user.id,
-      name: user.name,
-      role: user.role,
-      contact_number: user.contact_number,
-      profile,
-    },
+    user: mapUser(user),
   };
 };
 
@@ -179,15 +174,7 @@ const refreshToken = async ({ refreshToken }) => {
     }),
     accessTokenExpiresIn: TOKEN_EXPIRATION.access_token / 1000,
     refreshToken: rawToken,
-    user: {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-      contact_number: user.contact_number,
-      profile:
-        user.role === "doctor" ? user.doctorProfile : user.patientProfile,
-    },
+    user: mapUser(user),
   };
 };
 
@@ -203,6 +190,7 @@ const requestPasswordReset = async ({ email }) => {
     message: "If an account exists, a password reset email has been sent.",
   };
 };
+
 const verifyPasswordResetToken = async ({ token }) => {
   const hashedToken = hashToken(token);
 
@@ -221,6 +209,7 @@ const verifyPasswordResetToken = async ({ token }) => {
     message: "Password reset token is valid",
   };
 };
+
 const submitNewPassword = async ({ token, newPassword }) => {
   const hashedToken = hashToken(token);
 
@@ -257,6 +246,11 @@ const submitNewPassword = async ({ token, newPassword }) => {
     message: "Password updated successfully",
   };
 };
+
+const me = async ({ user }) => {
+  return mapUser(user);
+};
+
 export {
   register,
   verifyEmail,
@@ -267,4 +261,5 @@ export {
   requestPasswordReset,
   verifyPasswordResetToken,
   submitNewPassword,
+  me,
 };

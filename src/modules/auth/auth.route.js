@@ -55,4 +55,7 @@ router.post(
   validate(resendVerificationSchema),
   authController.resendVerification,
 );
+
+router.get("/me", authMiddleware, authController.me);
+
 export default router;

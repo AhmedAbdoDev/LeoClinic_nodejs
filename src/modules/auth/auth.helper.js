@@ -30,3 +30,13 @@ export const sendPasswordReset = async (user) => {
     console.error("Failed to send password reset email:", err);
   }
 };
+
+export const mapUser = (user) => ({
+  id: user._id,
+  name: user.name,
+  email: user.email,
+  role: user.role,
+  contact_number: user.contact_number,
+  is_verified: user.is_verified,
+  profile: user.role === "doctor" ? user.doctorProfile : user.patientProfile,
+});
