@@ -1,5 +1,14 @@
 import transporter from "../lib/mailer/transport.js";
 
+export async function sendEmail({ to, subject, html }) {
+  await transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to,
+    subject,
+    html,
+  });
+}
+
 export const sendVerificationEmail = async ({ to, token }) => {
   const url = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
 

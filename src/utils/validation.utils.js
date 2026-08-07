@@ -3,13 +3,12 @@ import { z } from "zod";
 
 const phoneRegex = /^(\+20|0)?1[0125][0-9]{8}$/;
 
-const objectIdSchema = z
-  .string({
-    required_error: "Specialty is required",
-  })
-  .refine((id) => mongoose.Types.ObjectId.isValid(id), {
-    message: "Invalid specialty id",
-  });
+const objectIdSchema = (fieldName) =>
+  z
+    .string({ required_error: `${fieldName} is required` })
+    .refine((id) => mongoose.Types.ObjectId.isValid(id), {
+      message: `Invalid ${fieldName}`,
+    });
 
 const emailSchema = z
   .string({
