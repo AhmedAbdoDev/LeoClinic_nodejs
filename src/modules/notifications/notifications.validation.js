@@ -1,7 +1,8 @@
 import { z } from "zod";
 import { objectIdSchema } from "../../utils/validation.utils.js";
-export const acceptAndRejectSchema = z.object({
+
+export const notificationIdSchema = z.object({
   params: z.object({
-    doctorId: objectIdSchema("doctorId"),
+    id: objectIdSchema("notification_id"),
   }),
 });

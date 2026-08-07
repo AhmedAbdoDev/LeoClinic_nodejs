@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { objectIdSchema } from "../../utils/validation.utils.js";
 
 export const updateUserSchema = z.object({
   body: z.object({
@@ -17,12 +18,8 @@ export const getUsersSchema = z.object({
   }),
 });
 
-
 export const useridSchema = z.object({
   params: z.object({
-    userid: z.string().regex(
-      /^[0-9a-fA-F]{24}$/,
-      "Invalid MongoDB ObjectId"
-    ),
+    userid: objectIdSchema("user_id"),
   }),
 });
