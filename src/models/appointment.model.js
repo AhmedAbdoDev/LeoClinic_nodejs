@@ -17,6 +17,10 @@ const AppointmentSchema = new Schema(
       ref: "Availability",
       required: true,
     },
+    slot_id: {
+      type: Schema.Types.ObjectId,
+      required: true,
+    },
     status: {
       type: String,
       enum: ["pending", "confirmed", "completed", "cancelled"],
