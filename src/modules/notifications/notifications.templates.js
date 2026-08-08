@@ -13,6 +13,10 @@ const templates = {
     title: "Appointment Confirmed",
     message: `Dr. ${payload.doctorName} confirmed your appointment.`,
   }),
+  [NotificationTypes.APPOINTMENT_COMPLETED]: (payload) => ({
+    title: "Appointment Completed",
+    message: `Dr. ${payload.doctorName} Completed your appointment.`,
+  }),
   [NotificationTypes.APPOINTMENT_CANCELLED]: (payload) => ({
     title: "Appointment Cancelled",
     message: `Your appointment has been cancelled.`,
