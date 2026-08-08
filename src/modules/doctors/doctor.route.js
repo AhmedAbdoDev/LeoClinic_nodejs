@@ -11,6 +11,8 @@ import {
   updateDoctorProfileSchema,
   addDoctorLocationSchema,
   removeDoctorLocationSchema,
+  searchDoctorsSchema,
+  doctorProfileParamSchema,
 } from "./doctor.validation.js";
 import {
   defineAvailability,
@@ -20,10 +22,21 @@ import {
   addLocation,
   removeLocation,
   uploadLicenseCertificate,
+  getDoctors,
+  getDoctorById,
 } from "./doctor.controller.js";
 import { upload } from "../../middlewares/upload.middleware.js";
 
 const router = Router();
+
+router.get("/", authMiddleware, validate(searchDoctorsSchema), getDoctors);
+
+router.get(
+  "/:doctorId",
+  authMiddleware,
+  validate(doctorProfileParamSchema),
+  getDoctorById,
+);
 
 router.post(
   "/availability",

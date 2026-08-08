@@ -37,6 +37,13 @@ export const defineAvailability = async ({ doctorId, data }) => {
   const { day, location_id, start_time, end_time, slot_duration_minutes } =
     data;
 
+  const doctor = await User.findOne({
+    _id: doctorId,
+    "doctorProfile.locations": location_id,
+  });
+
+  if (!doctor) throw new AppError("This location is not in your profile", 409);
+
   const newSlots = generateSlots({
     start_time,
     end_time,
@@ -237,5 +244,64 @@ export const uploadLicenseCertificate = async ({ doctorId, file }) => {
 
   return {
     message: "License certificate uploaded successfully",
+  };
+};
+
+export const searchDoctors = async ({ filters }) => {
+  const { location_id, specialty_id, name, page, limit } = filters;
+  const query = { role: "doctor", "doctorProfile.approval_status": "approved" };
+  if (specialty_id) query["doctorProfile.specialty_id"] = specialty_id;
+  if (location_id) query["doctorProfile.locations"] = location_id;
+  if (name) query.name = { $regex: name, $options: "i" };
+  const skip = (page - 1) * limit;
+
+  const [doctors, total] = await Promise.all([
+    User.find(query)
+      .populate("doctorProfile.specialty_id", "name")
+      .populate("doctorProfile.locations", "name address city")
+      .skip(skip)
+      .limit(limit)
+      .select("-password"),
+
+    User.countDocuments(query),
+  ]);
+  return {
+    doctors,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+};
+
+export const getDoctorProfile = async ({ doctorId }) => {
+  const doctor = await User.findOne({
+    _id: doctorId,
+    role: "doctor",
+    "doctorProfile.approval_status": "approved",
+  })
+    .populate("doctorProfile.specialty_id", "name")
+    .populate("doctorProfile.locations", "name address city")
+    .select("-password");
+
+  if (!doctor) {
+    throw new AppError("Doctor not found", 404);
+  }
+  const availability = await Availability.find({
+    doctor_id: doctorId,
+  });
+
+  const availabilities = availability.map((avail) => {
+    return {
+      ...avail.toObject(),
+      slots: avail.slots.filter((slot) => !slot.is_booked),
+    };
+  });
+
+  return {
+    doctor,
+    availabilities,
   };
 };

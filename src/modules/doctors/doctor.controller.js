@@ -1,3 +1,4 @@
+import { success } from "zod";
 import * as doctorService from "./doctor.service.js";
 
 export const defineAvailability = async (req, res) => {
@@ -89,5 +90,26 @@ export const uploadLicenseCertificate = async (req, res) => {
   res.status(200).json({
     success: true,
     ...result,
+  });
+};
+
+export const getDoctors = async (req, res) => {
+  const result = await doctorService.searchDoctors({
+    filters: req.query,
+  });
+  res.status(200).json({
+    success: true,
+    data: result,
+  });
+};
+
+export const getDoctorById = async (req, res) => {
+  const result = await doctorService.getDoctorProfile({
+    doctorId: req.params.doctorId,
+  });
+
+  res.status(200).json({
+    success: true,
+    data: result,
   });
 };
