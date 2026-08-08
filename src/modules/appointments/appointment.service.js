@@ -58,6 +58,7 @@ export const updateAppointmentStatus = async (appointmentId, status, notes, user
       const slot = availability.slots.id(appointment.slot_id);
       if (slot) {
         slot.is_booked = false;
+        await slot.save();
         await availability.save();
       }
     }
