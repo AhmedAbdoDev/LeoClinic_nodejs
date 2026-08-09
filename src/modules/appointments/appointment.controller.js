@@ -1,13 +1,22 @@
-import { bookAppointment, updateAppointmentStatus, getAppointments } from './appointment.service.js';
+import {
+  bookAppointment,
+  updateAppointmentStatus,
+  getAppointments,
+} from "./appointment.service.js";
 
 export const bookAppointmentHandler = async (req, res, next) => {
-  const { availabilityId, slotId } = req.body;
+  const { availabilityId, slotId, appointmentDate } = req.body;
   const patientId = req.user._id;
 
-  const appointment = await bookAppointment(patientId, availabilityId, slotId);
+  const appointment = await bookAppointment(
+    patientId,
+    availabilityId,
+    slotId,
+    appointmentDate,
+  );
   res.status(201).json({
     success: true,
-    message: 'Appointment booked successfully',
+    message: "Appointment booked successfully",
     data: appointment,
   });
 };
@@ -18,10 +27,16 @@ export const updateAppointmentStatusHandler = async (req, res, next) => {
   const userId = req.user._id;
   const role = req.user.role;
 
-  const updated = await updateAppointmentStatus(id, status, notes, userId, role);
+  const updated = await updateAppointmentStatus(
+    id,
+    status,
+    notes,
+    userId,
+    role,
+  );
   res.status(200).json({
     success: true,
-    message: 'Appointment updated successfully',
+    message: "Appointment updated successfully",
     data: updated,
   });
 };

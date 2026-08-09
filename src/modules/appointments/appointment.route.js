@@ -1,36 +1,39 @@
-import { Router } from 'express';
-import { authMiddleware, authorize } from '../../middlewares/auth.middleware.js';
-import { validate } from '../../middlewares/validate.middleware.js';
+import { Router } from "express";
+import {
+  authMiddleware,
+  authorize,
+} from "../../middlewares/auth.middleware.js";
+import { validate } from "../../middlewares/validate.middleware.js";
 import {
   bookAppointmentSchema,
   updateAppointmentStatusSchema,
   getAppointmentsSchema,
-} from './appointment.validation.js';
+} from "./appointment.validation.js";
 import {
   bookAppointmentHandler,
   updateAppointmentStatusHandler,
   getAppointmentsHandler,
-} from './appointment.controller.js';
+} from "./appointment.controller.js";
 
 const router = Router();
 router.post(
-  '/',
+  "/",
   authMiddleware,
-  authorize('patient'),
+  authorize("patient"),
   validate(bookAppointmentSchema),
-  bookAppointmentHandler
+  bookAppointmentHandler,
 );
 router.patch(
-  '/:id',
+  "/:id",
   authMiddleware,
   validate(updateAppointmentStatusSchema),
-  updateAppointmentStatusHandler
+  updateAppointmentStatusHandler,
 );
 router.get(
-  '/',
+  "/",
   authMiddleware,
   validate(getAppointmentsSchema),
-  getAppointmentsHandler
+  getAppointmentsHandler,
 );
 
 export default router;
