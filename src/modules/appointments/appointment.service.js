@@ -1,8 +1,13 @@
-import Appointment from '../../models/appointment.model.js';
-import Availability from '../../models/availability.model.js';
-import Notification from '../../models/notification.model.js';
-import AppError from '../../error/AppError.js';
-import { timeToMinutes } from '../../utils/time.js';
+import Appointment from "../../models/appointment.model.js";
+import Availability from "../../models/availability.model.js";
+import Notification from "../../models/notification.model.js";
+import AppError from "../../error/AppError.js";
+import { timeToMinutes } from "../../utils/time.js";
+import {
+  getDayName,
+  getMinutesFromDate,
+  normalizeDay,
+} from "./appointment.utils.js";
 
 const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
@@ -43,43 +48,65 @@ const createNotification = async ({ userId, appointmentId, recipientRole, type, 
   }
 };
 
-export const bookAppointment = async (patientId, availabilityId, slotId) => {
-  const availability = await Availability.findOne({ _id: availabilityId });
-  if (!availability) {
-    throw new AppError('Availability not found', 404);
-  }
+export const bookAppointment = async (
+  patientId,
+  availabilityId,
+  slotId,
+  appointmentDate,
+) => {
+  const availability = await Availability.findOne({
+    _id: availabilityId,
+  });
+
+  if (!availability) throw new AppError("Availability not found", 404);
 
   const slot = availability.slots.id(slotId);
-  if (!slot) {
-    throw new AppError('Slot not found', 404);
+  if (!slot) throw new AppError("Slot not found", 404);
+
+  
+  let finalAppointmentDate;
+  if (appointmentDate) {
+    finalAppointmentDate = new Date(appointmentDate);
+    if (Number.isNaN(finalAppointmentDate.getTime()))
+      throw new AppError("Invalid appointment date", 400);
+    if (finalAppointmentDate.getTime() <= Date.now())
+      throw new AppError("Appointment date must be in the future", 400);
+    const appointmentDay = getDayName(finalAppointmentDate);
+    const availabilityDay = normalizeDay(availability.day);
+    if (appointmentDay !== availabilityDay)
+      throw new AppError(`Appointment date must be on ${availability.day}`, 400);
+    const appointmentMinutes = getMinutesFromDate(finalAppointmentDate);
+    if (appointmentMinutes !== slot.start_time)
+      throw new AppError("Appointment time does not match the selected slot", 400);
+  } else {
+    
+    const startMinutes = typeof slot.start_time === 'string'
+      ? timeToMinutes(slot.start_time)
+      : slot.start_time;
+    finalAppointmentDate = getNextDayDate(availability.day, startMinutes);
   }
-  if (slot.is_booked) {
-    throw new AppError('This slot is no longer available', 409);
-  }
+
+  if (slot.is_booked)
+    throw new AppError("This slot is no longer available", 409);
 
   slot.is_booked = true;
-  await availability.save();
-
-  const startMinutes = typeof slot.start_time === 'string'
-    ? timeToMinutes(slot.start_time)
-    : slot.start_time;
-  const appointmentDate = getNextDayDate(availability.day, startMinutes);
+  await slot.save();
 
   const appointment = await Appointment.create({
     patient_id: patientId,
     doctor_id: availability.doctor_id,
     availability_id: availability._id,
     slot_id: slot._id,
-    appointment_date: appointmentDate,
-    status: 'pending',
-    notes: '',
+    status: "pending",
+    appointment_date: finalAppointmentDate,
+    notes: "",
   });
 
+  
   const populated = await Appointment.findById(appointment._id)
     .populate('patient_id', 'name email')
     .populate('doctor_id', 'name email');
 
- 
   await createNotification({
     userId: patientId,
     appointmentId: appointment._id,
@@ -89,7 +116,6 @@ export const bookAppointment = async (patientId, availabilityId, slotId) => {
     message: 'Your appointment has been created successfully.',
   });
 
- 
   await createNotification({
     userId: availability.doctor_id,
     appointmentId: appointment._id,
@@ -99,40 +125,52 @@ export const bookAppointment = async (patientId, availabilityId, slotId) => {
     message: `New appointment booked by ${populated.patient_id.name}.`,
   });
 
-  return populated;
+  return appointment;
 };
 
-export const updateAppointmentStatus = async (appointmentId, status, notes, userId, role) => {
+export const updateAppointmentStatus = async (
+  appointmentId,
+  status,
+  notes,
+  userId,
+  role,
+) => {
   const appointment = await Appointment.findById(appointmentId);
   if (!appointment) {
-    throw new AppError('Appointment not found', 404);
+    throw new AppError("Appointment not found", 404);
   }
 
-  if (role === 'doctor' && appointment.doctor_id.toString() !== userId) {
-    throw new AppError('You can only update your own appointments', 403);
+  if (role === "doctor" && appointment.doctor_id.toString() !== userId) {
+    throw new AppError("You can only update your own appointments", 403);
   }
-  if (role === 'patient' && appointment.patient_id.toString() !== userId) {
-    throw new AppError('You can only update your own appointments', 403);
+  if (role === "patient" && appointment.patient_id.toString() !== userId) {
+    throw new AppError("You can only update your own appointments", 403);
   }
 
   appointment.status = status;
   if (notes !== undefined) appointment.notes = notes;
   await appointment.save();
 
-  if (status === 'cancelled' && appointment.availability_id && appointment.slot_id) {
-    const availability = await Availability.findById(appointment.availability_id);
+  if (
+    status === "cancelled" &&
+    appointment.availability_id &&
+    appointment.slot_id
+  ) {
+    const availability = await Availability.findById(
+      appointment.availability_id,
+    );
     if (availability) {
       const slot = availability.slots.id(appointment.slot_id);
       if (slot) {
         slot.is_booked = false;
-        await availability.save();
+        await slot.save();
       }
     }
 
+    
     const populated = await Appointment.findById(appointment._id)
       .populate('patient_id', 'name email')
       .populate('doctor_id', 'name email');
-
 
     await createNotification({
       userId: appointment.patient_id,
@@ -158,23 +196,26 @@ export const updateAppointmentStatus = async (appointmentId, status, notes, user
 
 export const getAppointments = async (filters, userId, role) => {
   const { status, doctorId, patientId, page = 1, limit = 10 } = filters;
+
   const query = {};
+
   if (status) query.status = status;
   if (doctorId) query.doctor_id = doctorId;
   if (patientId) query.patient_id = patientId;
 
-  if (role === 'patient') {
+  if (role === "patient") {
     query.patient_id = userId;
-  } else if (role === 'doctor') {
+  } else if (role === "doctor") {
     query.doctor_id = userId;
   }
 
   const skip = (Number(page) - 1) * Number(limit);
+
   const [appointments, total] = await Promise.all([
     Appointment.find(query)
-      .populate('patient_id', 'name email contact_number')
-      .populate('doctor_id', 'name email')
-      .populate('availability_id')
+      .populate("patient_id", "name email contact_number")
+      .populate("doctor_id", "name email")
+      .populate("availability_id")
       .skip(skip)
       .limit(Number(limit))
       .sort({ createdAt: -1 }),

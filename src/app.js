@@ -16,10 +16,10 @@ import patientRoutes from "./modules/patients/patient.route.js";
 import doctorRoutes from "./modules/doctors/doctor.route.js";
 import notificationsRoutes from "./modules/notifications/notifications.routes.js";
 import appointmentRoutes from "./modules/appointments/appointment.route.js";
-import doctorAppointmentRoute from "./modules/doctorAppointment/appointment.route.js"
-import paymentRoutes from './modules/payments/payment.route.js';
+import doctorAppointmentRoute from "./modules/doctorAppointment/appointment.route.js";
+import ratingsRoutes from "./modules/ratings/rating.route.js";
+import paymentRoutes from "./modules/payments/payment.route.js";
 
-app.use('/api/payments', paymentRoutes);
 app.use("/api/doctorAppointments", doctorAppointmentRoute);
 app.use("/api/doctors", doctorRoutes);
 app.use("/api/health", healthRoutes);
@@ -30,6 +30,9 @@ app.use("/api/users", userRoutes);
 app.use("/api/patients", patientRoutes);
 app.use("/api/notifications", notificationsRoutes);
 app.use("/api/appointments", appointmentRoutes);
+app.use("/api/ratings", ratingsRoutes);
+app.use("/api/payments", paymentRoutes);
+
 app.use(errorHandler);
 
 export default app;
