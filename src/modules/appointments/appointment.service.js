@@ -133,7 +133,7 @@ export const updateAppointmentStatus = async (appointmentId, status, notes, user
       .populate('patient_id', 'name email')
       .populate('doctor_id', 'name email');
 
-    // إشعارات الإلغاء
+
     await createNotification({
       userId: appointment.patient_id,
       appointmentId: appointment._id,
