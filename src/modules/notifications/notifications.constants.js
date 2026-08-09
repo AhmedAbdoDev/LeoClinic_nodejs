@@ -10,6 +10,8 @@ export const NotificationTypes = {
   REMINDER: "reminder",
   DOCTOR_APPROVED: "doctor_approved",
   DOCTOR_REJECTED: "doctor_rejected",
+  RATING_CREATED: "rating_created",
+  RATING_RESPONDED: "rating_responded",
 };
 
 export const NotificationEntities = {
@@ -17,6 +19,7 @@ export const NotificationEntities = {
   PAYMENT: "payment",
   DOCTOR: "doctor",
   PATIENT: "patient",
+  RATING: "rating",
 };
 
 export const NotificationRecipients = {
@@ -37,4 +40,5 @@ export const NotificationActions = {
   APPROVED: "approved",
   REJECTED: "rejected",
   REMINDER: "reminder",
+  RESPONDED: "responded",
 };

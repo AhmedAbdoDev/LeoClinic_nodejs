@@ -14,15 +14,11 @@ async function createEmailJob({
     event_key: eventKey,
   });
 
-  if (existsJob) {
-    return;
-  }
+  if (existsJob) return;
 
   const user = await User.findById(userId).select("email");
 
-  if (!user) {
-    return;
-  }
+  if (!user) return;
 
   await NotificationJob.create({
     notification_id: notificationId,
