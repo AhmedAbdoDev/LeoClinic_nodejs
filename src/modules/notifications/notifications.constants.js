@@ -6,6 +6,7 @@ export const NotificationTypes = {
   APPOINTMENT_COMPLETED: "appointment_completed",
   PAYMENT_PENDING: "payment_pending",
   PAYMENT_COMPLETED: "payment_completed",
+  PAYMENT_RECEIVED: "payment_received",
   PAYMENT_FAILED: "payment_failed",
   REMINDER: "reminder",
   DOCTOR_APPROVED: "doctor_approved",

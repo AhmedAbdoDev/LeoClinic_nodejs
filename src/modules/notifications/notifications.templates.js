@@ -21,6 +21,10 @@ const templates = {
     title: "Appointment Cancelled",
     message: `Your appointment has been cancelled.`,
   }),
+  [NotificationTypes.PAYMENT_RECEIVED]: (payload) => ({
+    title: "Payment Received",
+    message: `Patient ${payload.patientName} has paid for the appointment.`,
+  }),
   [NotificationTypes.PAYMENT_COMPLETED]: (payload) => ({
     title: "Payment Successful",
     message: "Your payment has been completed successfully.",

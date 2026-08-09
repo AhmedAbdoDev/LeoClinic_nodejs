@@ -1,42 +1,13 @@
 import Payment from "../../models/payment.model.js";
 import Appointment from "../../models/appointment.model.js";
-import Notification from "../../models/notification.model.js";
 import AppError from "../../error/AppError.js";
-
-const buildEventKey = (entity, entityId, action, recipientRole) => {
-  return `${entity}:${entityId}:${action}:${recipientRole}`;
-};
-
-const createNotification = async ({
-  userId,
-  appointmentId,
-  recipientRole,
-  type,
-  title,
-  message,
-  data = {},
-}) => {
-  try {
-    const eventKey = buildEventKey(
-      "payment",
-      appointmentId,
-      "paid",
-      recipientRole,
-    );
-    await Notification.create({
-      user_id: userId,
-      appointment_id: appointmentId,
-      event_key: eventKey,
-      recipient_role: recipientRole,
-      type,
-      title,
-      message,
-      data,
-    });
-  } catch (error) {
-    console.error("Failed to create notification:", error.message);
-  }
-};
+import {
+  NotificationActions,
+  NotificationEntities,
+  NotificationRecipients,
+  NotificationTypes,
+} from "../notifications/notifications.constants.js";
+import { createNotification } from "../notifications/notifications.helper.js";
 
 export const simulatePayment = async (appointmentId, patientId, method) => {
   const appointment = await Appointment.findById(appointmentId)
@@ -71,25 +42,32 @@ export const simulatePayment = async (appointmentId, patientId, method) => {
     status: "paid",
     paid_at: new Date(),
   });
-
   await createNotification({
     userId: appointment.patient_id._id,
     appointmentId: appointment._id,
-    recipientRole: "patient",
-    type: "payment_success",
-    title: "Payment Successful",
-    message: "Your payment was successful.",
-    data: { paymentId: payment._id, method },
+    recipientRole: NotificationRecipients.PATIENT,
+    type: NotificationTypes.PAYMENT_COMPLETED,
+    entity: NotificationEntities.PAYMENT,
+    entityId: payment._id,
+    action: NotificationActions.PAID,
+    payload: {
+      paymentId: payment._id,
+      method,
+    },
   });
 
   await createNotification({
     userId: appointment.doctor_id._id,
     appointmentId: appointment._id,
-    recipientRole: "doctor",
-    type: "payment_received",
-    title: "Payment Received",
-    message: `Patient ${appointment.patient_id.name} has paid for the appointment.`,
-    data: { paymentId: payment._id, patientName: appointment.patient_id.name },
+    recipientRole: NotificationRecipients.DOCTOR,
+    type: NotificationTypes.PAYMENT_RECEIVED,
+    entity: NotificationEntities.PAYMENT,
+    entityId: payment._id,
+    action: NotificationActions.PAID,
+    payload: {
+      paymentId: payment._id,
+      patientName: appointment.patient_id.name,
+    },
   });
 
   return payment;
