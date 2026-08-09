@@ -29,6 +29,14 @@ const templates = {
     title: "Appointment Reminder",
     message: `You have an appointment soon with Dr. ${payload.doctorName}.`,
   }),
+  [NotificationTypes.RATING_CREATED]: (payload) => ({
+    title: "New Rating",
+    message: `${payload.patientName} rated you ${payload.rate}/5.`,
+  }),
+  [NotificationTypes.RATING_RESPONDED]: (payload) => ({
+    title: "Response to Your Review",
+    message: "An admin has responded to your review.",
+  }),
 };
 
 export function buildNotification(type, payload = {}) {
