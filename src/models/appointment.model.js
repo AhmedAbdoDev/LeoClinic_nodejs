@@ -32,19 +32,6 @@ const AppointmentSchema = new Schema(
       default: "pending",
     },
     notes: String,
-    payment: {
-      amount: Number,
-      method: {
-        type: String,
-        enum: ["cash", "card", "wallet"],
-      },
-      status: {
-        type: String,
-        enum: ["pending", "paid"],
-        default: "pending",
-      },
-      paid_at: Date,
-    },
     doctor_snapshot: {
       name: String,
       specialty: String,

@@ -6,6 +6,13 @@ import {
   getMinutesFromDate,
   normalizeDay,
 } from "./appointment.utils.js";
+import {
+  NotificationActions,
+  NotificationEntities,
+  NotificationRecipients,
+  NotificationTypes,
+} from "../notifications/notifications.constants.js";
+import { createNotification } from "../notifications/notifications.helper.js";
 
 export const bookAppointment = async (
   patientId,
@@ -58,7 +65,39 @@ export const bookAppointment = async (
     notes: "",
   });
 
-  return appointment;
+  const populated = await Appointment.findById(appointment._id)
+    .populate("patient_id", "name email")
+    .populate("doctor_id", "name email");
+
+  await createNotification({
+    userId: patientId,
+    appointmentId: appointment._id,
+    recipientRole: NotificationRecipients.PATIENT,
+    type: NotificationTypes.APPOINTMENT_CREATED,
+    entity: NotificationEntities.APPOINTMENT,
+    entityId: appointment._id,
+    action: NotificationActions.CREATED,
+    payload: {
+      appointmentId: appointment._id,
+      doctorName: populated.doctor_id.name,
+    },
+  });
+
+  await createNotification({
+    userId: availability.doctor_id,
+    appointmentId: appointment._id,
+    recipientRole: NotificationRecipients.DOCTOR,
+    type: NotificationTypes.NEW_APPOINTMENT,
+    entity: NotificationEntities.APPOINTMENT,
+    entityId: appointment._id,
+    action: NotificationActions.NEW,
+    payload: {
+      appointmentId: appointment._id,
+      patientName: populated.patient_id.name,
+    },
+  });
+
+  return populated;
 };
 
 export const updateAppointmentStatus = async (
@@ -99,6 +138,26 @@ export const updateAppointmentStatus = async (
         await slot.save();
       }
     }
+
+    await createNotification({
+      userId: appointment.patient_id,
+      appointmentId: appointment._id,
+      recipientRole: NotificationRecipients.PATIENT,
+      type: NotificationTypes.APPOINTMENT_CANCELLED,
+      entity: NotificationEntities.APPOINTMENT,
+      entityId: appointment._id,
+      action: NotificationActions.CANCELLED,
+    });
+
+    await createNotification({
+      userId: appointment.doctor_id,
+      appointmentId: appointment._id,
+      recipientRole: NotificationRecipients.DOCTOR,
+      type: NotificationTypes.APPOINTMENT_CANCELLED,
+      entity: NotificationEntities.APPOINTMENT,
+      entityId: appointment._id,
+      action: NotificationActions.CANCELLED,
+    });
   }
 
   return appointment;
@@ -106,9 +165,7 @@ export const updateAppointmentStatus = async (
 
 export const getAppointments = async (filters, userId, role) => {
   const { status, doctorId, patientId, page = 1, limit = 10 } = filters;
-
   const query = {};
-
   if (status) query.status = status;
   if (doctorId) query.doctor_id = doctorId;
   if (patientId) query.patient_id = patientId;
@@ -120,7 +177,6 @@ export const getAppointments = async (filters, userId, role) => {
   }
 
   const skip = (Number(page) - 1) * Number(limit);
-
   const [appointments, total] = await Promise.all([
     Appointment.find(query)
       .populate("patient_id", "name email contact_number")
