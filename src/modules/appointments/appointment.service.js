@@ -142,3 +142,24 @@ export const getAppointments = async (filters, userId, role) => {
     },
   };
 };
+export const getPaymentRecords = async () => {
+  return await Appointment.find({
+    "payment.status": { $exists: true },
+  });
+};
+
+export const getRevenueReport = async () => {
+  const appointments = await Appointment.find({
+    "payment.status": "paid",
+  });
+
+  const totalRevenue = appointments.reduce(
+    (total, appointment) => total + appointment.payment.amount,
+    0,
+  );
+
+  return {
+    totalRevenue,
+    totalPayments: appointments.length,
+  };
+};
