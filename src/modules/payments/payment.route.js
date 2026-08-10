@@ -37,13 +37,7 @@ router.get(
   getPatientPaymentsHandler,
 );
 
-
-router.get(
-  "/",
-  authMiddleware,
-  authorize("admin"),
-  getPaymentRecordsHandler,
-);
+router.get("/", authMiddleware, authorize("admin"), getPaymentRecordsHandler);
 
 router.get(
   "/revenue",
@@ -51,6 +45,5 @@ router.get(
   authorize("admin"),
   getRevenueReportHandler,
 );
-
 
 export default router;
