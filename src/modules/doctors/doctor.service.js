@@ -185,6 +185,9 @@ export const addDoctorLocation = async ({ doctorId, locationId }) => {
   const location = await Location.findById(locationId);
   if (!location) throw new AppError("Location not found", 404);
 
+  if (location.created_by?.toString() !== doctorId.toString())
+    throw new AppError("You can only add locations you created", 403);
+
   const doctor = await User.findOne({ _id: doctorId, role: "doctor" });
   if (!doctor) throw new AppError("Doctor not found", 404);
 

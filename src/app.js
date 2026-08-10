@@ -19,7 +19,9 @@ import appointmentRoutes from "./modules/appointments/appointment.route.js";
 import ratingsRoutes from "./modules/ratings/rating.route.js";
 import paymentRoutes from "./modules/payments/payment.route.js";
 import doctorAppointmentRoutes from "./modules/doctorAppointment/appointment.route.js";
+import locationRoutes from "./modules/locations/location.route.js";
 
+app.use("/api/locations", locationRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/doctorAppointments", doctorAppointmentRoutes);
 app.use("/api/doctors", doctorRoutes);
