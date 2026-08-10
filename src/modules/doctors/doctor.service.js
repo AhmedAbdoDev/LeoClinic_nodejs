@@ -181,41 +181,41 @@ export const updateDoctorProfile = async ({ doctorId, data }) => {
   return updatedUser;
 };
 
-export const addDoctorLocation = async ({ doctorId, locationId }) => {
-  const location = await Location.findById(locationId);
-  if (!location) throw new AppError("Location not found", 404);
+// export const addDoctorLocation = async ({ doctorId, locationId }) => {
+//   const location = await Location.findById(locationId);
+//   if (!location) throw new AppError("Location not found", 404);
 
-  if (location.created_by?.toString() !== doctorId.toString())
-    throw new AppError("You can only add locations you created", 403);
+//   if (location.created_by?.toString() !== doctorId.toString())
+//     throw new AppError("You can only add locations you created", 403);
 
-  const doctor = await User.findOne({ _id: doctorId, role: "doctor" });
-  if (!doctor) throw new AppError("Doctor not found", 404);
+//   const doctor = await User.findOne({ _id: doctorId, role: "doctor" });
+//   if (!doctor) throw new AppError("Doctor not found", 404);
 
-  const alreadyLinked = doctor.doctorProfile.locations.some(
-    (id) => id.toString() === locationId,
-  );
-  if (alreadyLinked) throw new AppError("Location already added", 409);
+//   const alreadyLinked = doctor.doctorProfile.locations.some(
+//     (id) => id.toString() === locationId,
+//   );
+//   if (alreadyLinked) throw new AppError("Location already added", 409);
 
-  const updatedUser = await User.findByIdAndUpdate(
-    doctorId,
-    { $addToSet: { "doctorProfile.locations": locationId } },
-    { new: true },
-  ).select("-password");
+//   const updatedUser = await User.findByIdAndUpdate(
+//     doctorId,
+//     { $addToSet: { "doctorProfile.locations": locationId } },
+//     { new: true },
+//   ).select("-password");
 
-  return updatedUser;
-};
+//   return updatedUser;
+// };
 
-export const removeDoctorLocation = async ({ doctorId, locationId }) => {
-  const updatedUser = await User.findByIdAndUpdate(
-    doctorId,
-    { $pull: { "doctorProfile.locations": locationId } },
-    { new: true },
-  ).select("-password");
+// export const removeDoctorLocation = async ({ doctorId, locationId }) => {
+//   const updatedUser = await User.findByIdAndUpdate(
+//     doctorId,
+//     { $pull: { "doctorProfile.locations": locationId } },
+//     { new: true },
+//   ).select("-password");
 
-  if (!updatedUser) throw new AppError("Doctor not found", 404);
+//   if (!updatedUser) throw new AppError("Doctor not found", 404);
 
-  return updatedUser;
-};
+//   return updatedUser;
+// };
 
 export const uploadLicenseCertificate = async ({ doctorId, file }) => {
   if (!file) throw new AppError("License certificate is required", 400);
