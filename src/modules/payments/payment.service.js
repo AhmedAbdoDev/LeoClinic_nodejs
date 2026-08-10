@@ -86,23 +86,25 @@ export const getPatientPayments = async (patientId) => {
 };
 
 export const getPaymentRecords = async () => {
-  return await Appointment.find({
-    "payment.status": { $exists: true },
-  });
+  return await Payment.find()
+    .populate("patient_id", "name email")
+    .populate("doctor_id", "name email")
+    .populate("appointment_id")
+    .sort({ createdAt: -1 });
 };
 
 export const getRevenueReport = async () => {
-  const appointments = await Appointment.find({
-    "payment.status": "paid",
+  const payments = await Payment.find({
+    status: "paid",
   });
 
-  const totalRevenue = appointments.reduce(
-    (total, appointment) => total + appointment.payment.amount,
+  const totalRevenue = payments.reduce(
+    (total, payment) => total + payment.amount,
     0,
   );
 
   return {
     totalRevenue,
-    totalPayments: appointments.length,
+    totalPayments: payments.length,
   };
 };
