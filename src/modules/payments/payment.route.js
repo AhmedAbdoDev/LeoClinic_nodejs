@@ -9,6 +9,8 @@ import {
   simulatePaymentHandler,
   getPaymentByAppointmentHandler,
   getPatientPaymentsHandler,
+  getPaymentRecordsHandler,
+  getRevenueReportHandler,
 } from "./payment.controller.js";
 
 const router = Router();
@@ -34,5 +36,21 @@ router.get(
   authorize("patient"),
   getPatientPaymentsHandler,
 );
+
+
+router.get(
+  "/",
+  authMiddleware,
+  authorize("admin"),
+  getPaymentRecordsHandler,
+);
+
+router.get(
+  "/revenue",
+  authMiddleware,
+  authorize("admin"),
+  getRevenueReportHandler,
+);
+
 
 export default router;
