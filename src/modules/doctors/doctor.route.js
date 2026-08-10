@@ -9,8 +9,8 @@ import {
   updateAvailabilitySchema,
   deleteAvailabilitySlotSchema,
   updateDoctorProfileSchema,
-  addDoctorLocationSchema,
-  removeDoctorLocationSchema,
+  // addDoctorLocationSchema,
+  // removeDoctorLocationSchema,
   searchDoctorsSchema,
   doctorProfileParamSchema,
 } from "./doctor.validation.js";
@@ -19,8 +19,8 @@ import {
   updateAvailability,
   deleteAvailabilitySlot,
   updateProfile,
-  addLocation,
-  removeLocation,
+  // addLocation,
+  // removeLocation,
   uploadLicenseCertificate,
   getDoctors,
   getDoctorById,
@@ -70,21 +70,21 @@ router.patch(
   updateProfile,
 );
 
-router.post(
-  "/profile/locations",
-  authMiddleware,
-  authorize("doctor"),
-  validate(addDoctorLocationSchema),
-  addLocation,
-);
+// router.post(
+//   "/profile/locations",
+//   authMiddleware,
+//   authorize("doctor"),
+//   validate(addDoctorLocationSchema),
+//   addLocation,
+// );
 
-router.delete(
-  "/profile/locations/:locationId",
-  authMiddleware,
-  authorize("doctor"),
-  validate(removeDoctorLocationSchema),
-  removeLocation,
-);
+// router.delete(
+//   "/profile/locations/:locationId",
+//   authMiddleware,
+//   authorize("doctor"),
+//   validate(removeDoctorLocationSchema),
+//   removeLocation,
+// );
 
 router.post(
   "/license",
