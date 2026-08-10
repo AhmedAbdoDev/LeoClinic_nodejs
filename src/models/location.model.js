@@ -22,6 +22,12 @@ const LocationSchema = new Schema(
       required: true,
       trim: true,
     },
+    created_by: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
   },
   {
     timestamps: true,

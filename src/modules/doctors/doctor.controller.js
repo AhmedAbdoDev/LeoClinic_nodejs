@@ -1,4 +1,3 @@
-import { success } from "zod";
 import * as doctorService from "./doctor.service.js";
 
 export const defineAvailability = async (req, res) => {
