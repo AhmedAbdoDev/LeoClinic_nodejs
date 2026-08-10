@@ -84,3 +84,25 @@ export const getPaymentByAppointment = async (appointmentId) => {
 export const getPatientPayments = async (patientId) => {
   return Payment.find({ patient_id: patientId }).sort({ createdAt: -1 });
 };
+
+export const getPaymentRecords = async () => {
+  return await Appointment.find({
+    "payment.status": { $exists: true },
+  });
+};
+
+export const getRevenueReport = async () => {
+  const appointments = await Appointment.find({
+    "payment.status": "paid",
+  });
+
+  const totalRevenue = appointments.reduce(
+    (total, appointment) => total + appointment.payment.amount,
+    0,
+  );
+
+  return {
+    totalRevenue,
+    totalPayments: appointments.length,
+  };
+};
