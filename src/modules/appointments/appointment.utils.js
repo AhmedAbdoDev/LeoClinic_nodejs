@@ -14,3 +14,15 @@ export const getDayName = (date) => {
 export const getMinutesFromDate = (date) => {
   return date.getUTCHours() * 60 + date.getUTCMinutes();
 };
+
+export const allowedTransitions = {
+  patient: {
+    pending: ["cancelled"],
+    confirmed: ["cancelled"],
+  },
+
+  doctor: {
+    pending: ["confirmed", "cancelled"],
+    confirmed: ["completed", "cancelled"],
+  },
+};

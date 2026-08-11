@@ -114,3 +114,18 @@ export const doctorProfileParamSchema = z.object({
     doctorId: objectIdSchema("doctorId"),
   }),
 });
+
+export const getDoctorAvailableSlotsSchema = z.object({
+  params: z.object({
+    doctorId: objectIdSchema("doctorId"),
+  }),
+  query: z.object({
+    date: z
+      .string()
+      .refine(
+        (value) => !Number.isNaN(Date.parse(`${value}T00:00:00Z`)),
+        { message: "Invalid date format" },
+      ),
+    locationId: objectIdSchema("locationId").optional(),
+  }),
+});

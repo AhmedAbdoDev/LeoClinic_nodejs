@@ -43,6 +43,13 @@ const AppointmentSchema = new Schema(
   .index({ doctor_id: 1, status: 1 })
   .index({ patient_id: 1 })
   .index({ slot_id: 1 })
-  .index({ doctor_id: 1, appointment_date: 1 });
+  .index({ doctor_id: 1, appointment_date: 1 })
+  .index(
+    { availability_id: 1, slot_id: 1, appointment_date: 1 },
+    {
+      unique: true,
+      partialFilterExpression: { status: { $ne: "cancelled" } },
+    },
+  );
 
 export default model("Appointment", AppointmentSchema);

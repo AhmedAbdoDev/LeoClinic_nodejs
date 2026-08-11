@@ -1,9 +1,16 @@
 import Availability from "../../models/availability.model.js";
+import Appointment from "../../models/appointment.model.js";
 import AppError from "../../error/AppError.js";
 import User from "../../models/user.model.js";
 import Specialty from "../../models/specialty.model.js";
 import Location from "../../models/location.model.js";
 import { uploadImage } from "../../services/cloudinary.service.js";
+import {
+  getDayName,
+  getMinutesFromDate,
+  normalizeDay,
+} from "../appointments/appointment.utils.js";
+import { minutesToTimeLabel } from "../../utils/time.js";
 
 const generateSlots = ({ start_time, end_time, slot_duration_minutes }) => {
   const slots = [];
@@ -31,6 +38,89 @@ const doNewSlotsOverlapExisting = (existingSlots, newSlots) => {
         newSlot.end_time > existing.start_time,
     ),
   );
+};
+
+export const getDoctorAvailableSlots = async ({
+  doctorId,
+  date,
+  locationId,
+}) => {
+  const doctor = await User.findOne({ _id: doctorId, role: "doctor" });
+  if (!doctor) throw new AppError("Doctor not found", 404);
+
+  const appointmentDate = new Date(`${date}T00:00:00Z`);
+  if (Number.isNaN(appointmentDate.getTime()))
+    throw new AppError("Invalid date format", 400);
+
+  const dayName = getDayName(appointmentDate);
+  const normalizedDay = normalizeDay(dayName);
+
+  const availabilityQuery = {
+    doctor_id: doctorId,
+    day: { $regex: new RegExp(`^${normalizedDay}$`, "i") },
+  };
+  if (locationId) availabilityQuery.location_id = locationId;
+
+  const availabilities = await Availability.find(availabilityQuery);
+
+  const startOfDay = new Date(appointmentDate);
+  startOfDay.setUTCHours(0, 0, 0, 0);
+  const endOfDay = new Date(appointmentDate);
+  endOfDay.setUTCHours(23, 59, 59, 999);
+
+  const appointments = await Appointment.find({
+    doctor_id: doctorId,
+    appointment_date: { $gte: startOfDay, $lte: endOfDay },
+    status: { $ne: "cancelled" },
+  });
+
+  const appointmentMap = new Map();
+  for (const appointment of appointments) {
+    const key = `${appointment.availability_id}-${appointment.slot_id}`;
+    appointmentMap.set(key, appointment);
+  }
+
+  const slots = availabilities.flatMap((availability) =>
+    availability.slots.map((slot) => {
+      const key = `${availability._id}-${slot._id}`;
+      const matchedAppointment = appointmentMap.get(key);
+      return {
+        availabilityId: availability._id,
+        locationId: availability.location_id,
+        slotId: slot._id,
+        start_time: slot.start_time,
+        end_time: slot.end_time,
+        label: minutesToTimeLabel(slot.start_time),
+        available: matchedAppointment ? false : true,
+        appointmentId: matchedAppointment?._id || null,
+      };
+    }),
+  );
+
+  const now = new Date();
+  const isToday =
+    now.getUTCFullYear() === appointmentDate.getUTCFullYear() &&
+    now.getUTCMonth() === appointmentDate.getUTCMonth() &&
+    now.getUTCDate() === appointmentDate.getUTCDate();
+
+  const finalSlots = slots.map((slot) => {
+    if (!slot.available) return slot;
+    if (isToday) {
+      const slotDate = new Date(appointmentDate);
+      const slotMinutes = slot.start_time;
+      slotDate.setUTCHours(Math.floor(slotMinutes / 60), slotMinutes % 60, 0, 0);
+      if (slotDate.getTime() <= Date.now()) {
+        return { ...slot, available: false, past: true };
+      }
+    }
+    return slot;
+  });
+
+  return {
+    date,
+    day: normalizedDay,
+    slots: finalSlots,
+  };
 };
 
 export const defineAvailability = async ({ doctorId, data }) => {
@@ -98,11 +188,16 @@ export const updateAvailability = async ({
 
   if (!availability) throw new AppError("Availability not found", 404);
 
-  const hasBookedSlot = availability.slots.some((slot) => slot.is_booked);
+  const availabilitySlotIds = availability.slots.map((slot) => slot._id);
+  const hasActiveAppointment = await Appointment.exists({
+    availability_id: availability._id,
+    slot_id: { $in: availabilitySlotIds },
+    status: { $ne: "cancelled" },
+  });
 
-  if (hasBookedSlot)
+  if (hasActiveAppointment)
     throw new AppError(
-      "Cannot update: this day already has a booked slot. Cancel or wait for it to complete first.",
+      "Cannot update: this day already has an active appointment on this availability. Cancel or complete it first.",
       409,
     );
 
@@ -140,7 +235,16 @@ export const deleteAvailabilitySlot = async ({
 
   if (!slot) throw new AppError("Slot not found", 404);
 
-  if (slot.is_booked) throw new AppError("Cannot delete a booked slot", 409);
+  const hasActiveAppointment = await Appointment.exists({
+    availability_id: availability._id,
+    slot_id: slot._id,
+    status: { $ne: "cancelled" },
+  });
+
+  if (hasActiveAppointment)
+    throw new AppError(
+      "Cannot delete a slot with active appointments", 409,
+    );
 
   slot.deleteOne();
 
@@ -299,7 +403,7 @@ export const getDoctorProfile = async ({ doctorId }) => {
   const availabilities = availability.map((avail) => {
     return {
       ...avail.toObject(),
-      slots: avail.slots.filter((slot) => !slot.is_booked),
+      slots: avail.slots,
     };
   });
 
