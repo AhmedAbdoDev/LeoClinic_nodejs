@@ -1,20 +1,20 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model } from "mongoose";
 
 const PaymentSchema = new Schema(
   {
     appointment_id: {
       type: Schema.Types.ObjectId,
-      ref: 'Appointment',
+      ref: "Appointment",
       required: true,
     },
     patient_id: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
     doctor_id: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
     amount: {
@@ -23,17 +23,17 @@ const PaymentSchema = new Schema(
     },
     method: {
       type: String,
-      enum: ['cash', 'card', 'wallet'],
+      enum: ["cash", "card", "wallet"],
       required: true,
     },
     status: {
       type: String,
-      enum: ['pending', 'paid', 'failed'],
-      default: 'pending',
+      enum: ["pending", "paid", "failed"],
+      default: "pending",
     },
     paid_at: Date,
   },
-  { timestamps: true, versionKey: false }
-);
+  { timestamps: true, versionKey: false },
+).index({ appointment_id: 1 }, { unique: true });
 
-export default model('Payment', PaymentSchema);
+export default model("Payment", PaymentSchema);

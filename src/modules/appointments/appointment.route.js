@@ -26,6 +26,7 @@ router.post(
 router.patch(
   "/:id",
   authMiddleware,
+  authorize("patient", "doctor"),
   validate(updateAppointmentStatusSchema),
   updateAppointmentStatusHandler,
 );

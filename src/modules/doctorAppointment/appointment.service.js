@@ -1,5 +1,6 @@
 import Appointment from "../../models/appointment.model.js";
 import Availability from "../../models/availability.model.js";
+import Payment from "../../models/payment.model.js";
 import AppError from "../../error/AppError.js";
 import { createNotification } from "../notifications/notifications.helper.js";
 import { NotificationTypes } from "../notifications/notifications.constants.js";
@@ -40,15 +41,28 @@ export const getDoctorSchedule = async ({ doctorId, filters }) => {
     availabilities.map((avail) => [avail._id.toString(), avail]),
   );
 
+  const appointmentIds = appointments.map((apt) => apt._id);
+  const payments = await Payment.find({
+    appointment_id: { $in: appointmentIds },
+  })
+    .select("appointment_id status")
+    .lean();
+
+  const paymentMap = new Map(
+    payments.map((payment) => [payment.appointment_id.toString(), payment]),
+  );
+
   const enrichedAppointments = appointments.map((apt) => {
     const availability = availabilityMap.get(apt.availability_id.toString());
     const slot = availability?.slots.id(apt.slot_id);
+    const payment = paymentMap.get(apt._id.toString());
 
     return {
       ...apt.toObject(),
       slot_time: slot
         ? { start_time: slot.start_time, end_time: slot.end_time }
         : null,
+      payment: payment ? { status: payment.status } : null,
     };
   });
 
@@ -159,10 +173,6 @@ export const cancelAppointment = async ({
   if (!availability) {
     throw new AppError("Invalid availability", 404);
   }
-  const slot = availability.slots.id(appointment.slot_id);
-  slot.is_booked = false;
-  await availability.save();
-
   appointment.status = "cancelled";
   await appointment.save();
   try {

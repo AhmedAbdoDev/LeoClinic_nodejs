@@ -11,7 +11,7 @@ const templates = {
   }),
   [NotificationTypes.APPOINTMENT_CONFIRMED]: (payload) => ({
     title: "Appointment Confirmed",
-    message: `Dr. ${payload.doctorName} confirmed your appointment.`,
+    message: `Dr. ${payload.doctorName} confirmed your appointment. You can now proceed with payment.`,
   }),
   [NotificationTypes.APPOINTMENT_COMPLETED]: (payload) => ({
     title: "Appointment Completed",

@@ -11,46 +11,37 @@ import {
 import { createNotification } from "../notifications/notifications.helper.js";
 
 export const simulatePayment = async (appointmentId, patientId, method) => {
-  const appointment = await Appointment.findById(appointmentId)
-    .populate("patient_id", "name email")
-    .populate("doctor_id", "name email");
+  const appointment = await Appointment.findById(appointmentId).populate(
+    "patient_id",
+    "name email",
+  );
 
-  if (!appointment) {
-    throw new AppError("Appointment not found", 404);
-  }
+  if (!appointment) throw new AppError("Appointment not found", 404);
 
-  if (appointment.patient_id._id.toString() !== patientId.toString()) {
+  if (appointment.patient_id._id.toString() !== patientId.toString())
     throw new AppError("You can only pay for your own appointments", 403);
-  }
 
-  if (appointment.status !== "pending") {
-    throw new AppError("Only pending appointments can be paid", 400);
-  }
+  if (appointment.status !== "confirmed")
+    throw new AppError("Only confirmed appointments can be paid", 400);
 
   const existingPayment = await Payment.findOne({
     appointment_id: appointmentId,
   });
-  if (existingPayment && existingPayment.status === "paid") {
-    throw new AppError("This appointment has already been paid", 400);
-  }
+  if (existingPayment)
+    throw new AppError("A payment already exists for this appointment", 400);
 
-  const doctor = await User.findById(appointment.doctor_id._id);
-  if (!doctor) {
-    throw new AppError("Doctor not found", 404);
-  }
-
-  const amount = doctor.doctorProfile?.price || 0;
-
+  const amount = appointment.doctor_snapshot?.price;
+  if (amount == null)
+    throw new AppError("Appointment price is not available", 400);
   const payment = await Payment.create({
     appointment_id: appointment._id,
     patient_id: appointment.patient_id._id,
-    doctor_id: appointment.doctor_id._id,
+    doctor_id: appointment.doctor_id,
     amount,
     method,
     status: "paid",
     paid_at: new Date(),
   });
-
 
   await createNotification({
     userId: appointment.patient_id._id,
@@ -68,7 +59,7 @@ export const simulatePayment = async (appointmentId, patientId, method) => {
   });
 
   await createNotification({
-    userId: appointment.doctor_id._id,
+    userId: appointment.doctor_id,
     appointmentId: appointment._id,
     recipientRole: NotificationRecipients.DOCTOR,
     type: NotificationTypes.PAYMENT_RECEIVED,

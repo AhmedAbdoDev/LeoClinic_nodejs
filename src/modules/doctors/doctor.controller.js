@@ -1,5 +1,18 @@
 import * as doctorService from "./doctor.service.js";
 
+export const getAvailableSlots = async (req, res) => {
+  const result = await doctorService.getDoctorAvailableSlots({
+    doctorId: req.params.doctorId,
+    date: req.query.date,
+    locationId: req.query.locationId,
+  });
+
+  res.status(200).json({
+    success: true,
+    data: result,
+  });
+};
+
 export const defineAvailability = async (req, res) => {
   const availability = await doctorService.defineAvailability({
     doctorId: req.user._id,

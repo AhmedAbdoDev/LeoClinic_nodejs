@@ -13,6 +13,7 @@ import {
   // removeDoctorLocationSchema,
   searchDoctorsSchema,
   doctorProfileParamSchema,
+  getDoctorAvailableSlotsSchema,
 } from "./doctor.validation.js";
 import {
   defineAvailability,
@@ -24,12 +25,19 @@ import {
   uploadLicenseCertificate,
   getDoctors,
   getDoctorById,
+  getAvailableSlots,
 } from "./doctor.controller.js";
 import { upload } from "../../middlewares/upload.middleware.js";
 
 const router = Router();
 
 router.get("/", authMiddleware, validate(searchDoctorsSchema), getDoctors);
+
+router.get(
+  "/:doctorId/available-slots",
+  validate(getDoctorAvailableSlotsSchema),
+  getAvailableSlots,
+);
 
 router.get(
   "/:doctorId",
