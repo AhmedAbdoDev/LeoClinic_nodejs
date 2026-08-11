@@ -33,6 +33,7 @@ router.patch(
 router.get(
   "/",
   authMiddleware,
+  authorize("patient", "doctor"),
   validate(getAppointmentsSchema),
   getAppointmentsHandler,
 );

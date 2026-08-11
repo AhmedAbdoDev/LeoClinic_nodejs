@@ -103,18 +103,25 @@ export const getDoctorAvailableSlots = async ({
     now.getUTCMonth() === appointmentDate.getUTCMonth() &&
     now.getUTCDate() === appointmentDate.getUTCDate();
 
-  const finalSlots = slots.map((slot) => {
-    if (!slot.available) return slot;
-    if (isToday) {
-      const slotDate = new Date(appointmentDate);
-      const slotMinutes = slot.start_time;
-      slotDate.setUTCHours(Math.floor(slotMinutes / 60), slotMinutes % 60, 0, 0);
-      if (slotDate.getTime() <= Date.now()) {
-        return { ...slot, available: false, past: true };
+  const finalSlots = slots
+    .map((slot) => {
+      if (!slot.available) return slot;
+      if (isToday) {
+        const slotDate = new Date(appointmentDate);
+        const slotMinutes = slot.start_time;
+        slotDate.setUTCHours(
+          Math.floor(slotMinutes / 60),
+          slotMinutes % 60,
+          0,
+          0,
+        );
+        if (slotDate.getTime() <= Date.now()) {
+          return { ...slot, available: false, past: true };
+        }
       }
-    }
-    return slot;
-  });
+      return slot;
+    })
+    .sort((a, b) => a.start_time - b.start_time);
 
   return {
     date,
@@ -242,9 +249,7 @@ export const deleteAvailabilitySlot = async ({
   });
 
   if (hasActiveAppointment)
-    throw new AppError(
-      "Cannot delete a slot with active appointments", 409,
-    );
+    throw new AppError("Cannot delete a slot with active appointments", 409);
 
   slot.deleteOne();
 
@@ -256,6 +261,32 @@ export const deleteAvailabilitySlot = async ({
   await availability.save();
 
   return { deleted: true, availabilityRemoved: false };
+};
+
+export const deleteAvailability = async ({ doctorId, availabilityId }) => {
+  const availability = await Availability.findOne({
+    _id: availabilityId,
+    doctor_id: doctorId,
+  });
+
+  if (!availability) throw new AppError("Availability not found", 404);
+  const hasActiveAppointment = await Appointment.exists({
+    availability_id: availability._id,
+    status: { $ne: "cancelled" },
+  });
+
+  if (hasActiveAppointment)
+    throw new AppError(
+      "Cannot delete availability: it has active appointments. Cancel or complete them first.",
+      409,
+    );
+
+  await availability.deleteOne();
+
+  return {
+    deleted: true,
+    availabilityId: availability._id,
+  };
 };
 
 export const updateDoctorProfile = async ({ doctorId, data }) => {

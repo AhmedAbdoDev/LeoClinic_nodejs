@@ -14,6 +14,7 @@ import {
   searchDoctorsSchema,
   doctorProfileParamSchema,
   getDoctorAvailableSlotsSchema,
+  deleteAvailabilitySchema,
 } from "./doctor.validation.js";
 import {
   defineAvailability,
@@ -26,6 +27,7 @@ import {
   getDoctors,
   getDoctorById,
   getAvailableSlots,
+  deleteAvailability,
 } from "./doctor.controller.js";
 import { upload } from "../../middlewares/upload.middleware.js";
 
@@ -68,6 +70,14 @@ router.delete(
   authorize("doctor"),
   validate(deleteAvailabilitySlotSchema),
   deleteAvailabilitySlot,
+);
+
+router.delete(
+  "/availability/:availabilityId",
+  authMiddleware,
+  authorize("doctor"),
+  validate(deleteAvailabilitySchema),
+  deleteAvailability,
 );
 
 router.patch(

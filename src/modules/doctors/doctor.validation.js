@@ -8,13 +8,17 @@ import {
   phoneRegex,
 } from "../../utils/validation.utils.js";
 
-const timeStringSchema = z
+const startTimeSchema = z
   .string()
   .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Time must be in HH:mm format");
 
+const endTimeSchema = z
+  .string()
+  .regex(/^(?:([01]\d|2[0-3]):[0-5]\d|24:00)$/, "Time must be in HH:mm format");
+
 const baseRangeShape = {
-  start_time: timeStringSchema,
-  end_time: timeStringSchema,
+  start_time: startTimeSchema,
+  end_time: endTimeSchema,
   slot_duration_minutes: z
     .number({ required_error: "slot_duration_minutes is required" })
     .int()
@@ -122,10 +126,15 @@ export const getDoctorAvailableSlotsSchema = z.object({
   query: z.object({
     date: z
       .string()
-      .refine(
-        (value) => !Number.isNaN(Date.parse(`${value}T00:00:00Z`)),
-        { message: "Invalid date format" },
-      ),
+      .refine((value) => !Number.isNaN(Date.parse(`${value}T00:00:00Z`)), {
+        message: "Invalid date format",
+      }),
     locationId: objectIdSchema("locationId").optional(),
+  }),
+});
+
+export const deleteAvailabilitySchema = z.object({
+  params: z.object({
+    availabilityId: objectIdSchema("availabilityId"),
   }),
 });
