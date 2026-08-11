@@ -16,7 +16,7 @@ const doctorBody = z
     role: z.literal("doctor"),
     contact_number: phoneSchema,
     doctorProfile: z.object({
-      specialty_id: objectIdSchema,
+      specialty_id: objectIdSchema("specialty_id"),
       price: z.coerce
         .number({
           required_error: "Price is required",

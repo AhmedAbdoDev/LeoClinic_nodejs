@@ -2,24 +2,23 @@ import { z } from "zod";
 import mongoose from "mongoose";
 import { DAYS, SLOT_RULES } from "./doctor.constants.js";
 import { timeToMinutes } from "../../utils/time.js";
-import { phoneSchema } from "../../utils/validation.utils.js";
+import {
+  objectIdSchema,
+  phoneSchema,
+  phoneRegex,
+} from "../../utils/validation.utils.js";
 
-const phoneRegex = /^(\+20|0)?1[0125][0-9]{8}$/;
-
-const objectIdSchema = (fieldName) =>
-  z
-    .string({ required_error: `${fieldName} is required` })
-    .refine((id) => mongoose.Types.ObjectId.isValid(id), {
-      message: `Invalid ${fieldName}`,
-    });
-
-const timeStringSchema = z
+const startTimeSchema = z
   .string()
   .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, "Time must be in HH:mm format");
 
+const endTimeSchema = z
+  .string()
+  .regex(/^(?:([01]\d|2[0-3]):[0-5]\d|24:00)$/, "Time must be in HH:mm format");
+
 const baseRangeShape = {
-  start_time: timeStringSchema,
-  end_time: timeStringSchema,
+  start_time: startTimeSchema,
+  end_time: endTimeSchema,
   slot_duration_minutes: z
     .number({ required_error: "slot_duration_minutes is required" })
     .int()
@@ -101,5 +100,41 @@ export const addDoctorLocationSchema = z.object({
 export const removeDoctorLocationSchema = z.object({
   params: z.object({
     locationId: objectIdSchema("locationId"),
+  }),
+});
+
+export const searchDoctorsSchema = z.object({
+  query: z.object({
+    specialty_id: objectIdSchema("specialty_id").optional(),
+    location_id: objectIdSchema("location_id").optional(),
+    name: z.string().optional(),
+    page: z.coerce.number().int().positive().default(1),
+    limit: z.coerce.number().int().positive().max(100).default(10),
+  }),
+});
+
+export const doctorProfileParamSchema = z.object({
+  params: z.object({
+    doctorId: objectIdSchema("doctorId"),
+  }),
+});
+
+export const getDoctorAvailableSlotsSchema = z.object({
+  params: z.object({
+    doctorId: objectIdSchema("doctorId"),
+  }),
+  query: z.object({
+    date: z
+      .string()
+      .refine((value) => !Number.isNaN(Date.parse(`${value}T00:00:00Z`)), {
+        message: "Invalid date format",
+      }),
+    locationId: objectIdSchema("locationId").optional(),
+  }),
+});
+
+export const deleteAvailabilitySchema = z.object({
+  params: z.object({
+    availabilityId: objectIdSchema("availabilityId"),
   }),
 });

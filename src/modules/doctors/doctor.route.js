@@ -9,21 +9,44 @@ import {
   updateAvailabilitySchema,
   deleteAvailabilitySlotSchema,
   updateDoctorProfileSchema,
-  addDoctorLocationSchema,
-  removeDoctorLocationSchema,
+  // addDoctorLocationSchema,
+  // removeDoctorLocationSchema,
+  searchDoctorsSchema,
+  doctorProfileParamSchema,
+  getDoctorAvailableSlotsSchema,
+  deleteAvailabilitySchema,
 } from "./doctor.validation.js";
 import {
   defineAvailability,
   updateAvailability,
   deleteAvailabilitySlot,
   updateProfile,
-  addLocation,
-  removeLocation,
+  // addLocation,
+  // removeLocation,
   uploadLicenseCertificate,
+  getDoctors,
+  getDoctorById,
+  getAvailableSlots,
+  deleteAvailability,
 } from "./doctor.controller.js";
 import { upload } from "../../middlewares/upload.middleware.js";
 
 const router = Router();
+
+router.get("/", authMiddleware, validate(searchDoctorsSchema), getDoctors);
+
+router.get(
+  "/:doctorId/available-slots",
+  validate(getDoctorAvailableSlotsSchema),
+  getAvailableSlots,
+);
+
+router.get(
+  "/:doctorId",
+  authMiddleware,
+  validate(doctorProfileParamSchema),
+  getDoctorById,
+);
 
 router.post(
   "/availability",
@@ -49,6 +72,14 @@ router.delete(
   deleteAvailabilitySlot,
 );
 
+router.delete(
+  "/availability/:availabilityId",
+  authMiddleware,
+  authorize("doctor"),
+  validate(deleteAvailabilitySchema),
+  deleteAvailability,
+);
+
 router.patch(
   "/profile",
   authMiddleware,
@@ -57,21 +88,21 @@ router.patch(
   updateProfile,
 );
 
-router.post(
-  "/profile/locations",
-  authMiddleware,
-  authorize("doctor"),
-  validate(addDoctorLocationSchema),
-  addLocation,
-);
+// router.post(
+//   "/profile/locations",
+//   authMiddleware,
+//   authorize("doctor"),
+//   validate(addDoctorLocationSchema),
+//   addLocation,
+// );
 
-router.delete(
-  "/profile/locations/:locationId",
-  authMiddleware,
-  authorize("doctor"),
-  validate(removeDoctorLocationSchema),
-  removeLocation,
-);
+// router.delete(
+//   "/profile/locations/:locationId",
+//   authMiddleware,
+//   authorize("doctor"),
+//   validate(removeDoctorLocationSchema),
+//   removeLocation,
+// );
 
 router.post(
   "/license",

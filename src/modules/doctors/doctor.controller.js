@@ -1,5 +1,18 @@
 import * as doctorService from "./doctor.service.js";
 
+export const getAvailableSlots = async (req, res) => {
+  const result = await doctorService.getDoctorAvailableSlots({
+    doctorId: req.params.doctorId,
+    date: req.query.date,
+    locationId: req.query.locationId,
+  });
+
+  res.status(200).json({
+    success: true,
+    data: result,
+  });
+};
+
 export const defineAvailability = async (req, res) => {
   const availability = await doctorService.defineAvailability({
     doctorId: req.user._id,
@@ -41,6 +54,19 @@ export const deleteAvailabilitySlot = async (req, res) => {
   });
 };
 
+export const deleteAvailability = async (req, res) => {
+  const result = await doctorService.deleteAvailability({
+    doctorId: req.user._id,
+    availabilityId: req.params.availabilityId,
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Availability deleted successfully",
+    data: result,
+  });
+};
+
 export const updateProfile = async (req, res) => {
   const updatedUser = await doctorService.updateDoctorProfile({
     doctorId: req.user._id,
@@ -54,31 +80,31 @@ export const updateProfile = async (req, res) => {
   });
 };
 
-export const addLocation = async (req, res) => {
-  const updatedUser = await doctorService.addDoctorLocation({
-    doctorId: req.user._id,
-    locationId: req.body.location_id,
-  });
+// export const addLocation = async (req, res) => {
+//   const updatedUser = await doctorService.addDoctorLocation({
+//     doctorId: req.user._id,
+//     locationId: req.body.location_id,
+//   });
 
-  res.status(200).json({
-    success: true,
-    message: "Location added successfully",
-    data: updatedUser,
-  });
-};
+//   res.status(200).json({
+//     success: true,
+//     message: "Location added successfully",
+//     data: updatedUser,
+//   });
+// };
 
-export const removeLocation = async (req, res) => {
-  const updatedUser = await doctorService.removeDoctorLocation({
-    doctorId: req.user._id,
-    locationId: req.params.locationId,
-  });
+// export const removeLocation = async (req, res) => {
+//   const updatedUser = await doctorService.removeDoctorLocation({
+//     doctorId: req.user._id,
+//     locationId: req.params.locationId,
+//   });
 
-  res.status(200).json({
-    success: true,
-    message: "Location removed successfully",
-    data: updatedUser,
-  });
-};
+//   res.status(200).json({
+//     success: true,
+//     message: "Location removed successfully",
+//     data: updatedUser,
+//   });
+// };
 
 export const uploadLicenseCertificate = async (req, res) => {
   const result = await doctorService.uploadLicenseCertificate({
@@ -89,5 +115,26 @@ export const uploadLicenseCertificate = async (req, res) => {
   res.status(200).json({
     success: true,
     ...result,
+  });
+};
+
+export const getDoctors = async (req, res) => {
+  const result = await doctorService.searchDoctors({
+    filters: req.query,
+  });
+  res.status(200).json({
+    success: true,
+    data: result,
+  });
+};
+
+export const getDoctorById = async (req, res) => {
+  const result = await doctorService.getDoctorProfile({
+    doctorId: req.params.doctorId,
+  });
+
+  res.status(200).json({
+    success: true,
+    data: result,
   });
 };

@@ -2,20 +2,28 @@ import express from "express";
 import cookieParser from "cookie-parser";
 
 import errorHandler from "./utils/errorHandler.js";
-import specialtyRoutes from "./modules/specialties/specialty.route.js";
 
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
+import specialtyRoutes from "./modules/specialties/specialty.route.js";
 import healthRoutes from "./modules/health/health.route.js";
 import authRoutes from "./modules/auth/auth.route.js";
 import approveRouter from "./modules/DoctorApprove/approve.route.js";
 import userRoutes from "./modules/users/user.route.js";
 import patientRoutes from "./modules/patients/patient.route.js";
-
 import doctorRoutes from "./modules/doctors/doctor.route.js";
+import notificationsRoutes from "./modules/notifications/notifications.routes.js";
+import appointmentRoutes from "./modules/appointments/appointment.route.js";
+import ratingsRoutes from "./modules/ratings/rating.route.js";
+import paymentRoutes from "./modules/payments/payment.route.js";
+import doctorAppointmentRoutes from "./modules/doctorAppointment/appointment.route.js";
+import locationRoutes from "./modules/locations/location.route.js";
 
+app.use("/api/locations", locationRoutes);
+app.use("/api/payments", paymentRoutes);
+app.use("/api/doctorAppointments", doctorAppointmentRoutes);
 app.use("/api/doctors", doctorRoutes);
 app.use("/api/health", healthRoutes);
 app.use("/api/auth", authRoutes);
@@ -23,6 +31,10 @@ app.use("/api/specialties", specialtyRoutes);
 app.use("/api/doctors", approveRouter);
 app.use("/api/users", userRoutes);
 app.use("/api/patients", patientRoutes);
+app.use("/api/notifications", notificationsRoutes);
+app.use("/api/appointments", appointmentRoutes);
+app.use("/api/ratings", ratingsRoutes);
 
 app.use(errorHandler);
+
 export default app;

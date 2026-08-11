@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { objectIdSchema } from "../../utils/validation.utils.js";
 
 export const updateUserSchema = z.object({
   body: z.object({
@@ -11,7 +12,14 @@ export const getUsersSchema = z.object({
   query: z.object({
     search: z.string().optional(),
     role: z.enum(["admin", "doctor", "patient"]).optional(),
+    blocked: z.enum(["true", "false"]).optional(),
     page: z.coerce.number().int().positive().default(1),
     limit: z.coerce.number().int().positive().max(100).default(10),
+  }),
+});
+
+export const useridSchema = z.object({
+  params: z.object({
+    userid: objectIdSchema("user_id"),
   }),
 });

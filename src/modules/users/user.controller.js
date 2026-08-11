@@ -1,4 +1,9 @@
-import { updateUserBasicInfo, getUsers } from "./user.service.js";
+import {
+  updateUserBasicInfo,
+  getUsers,
+  blockUserService,
+  unblockUserService,
+} from "./user.service.js";
 
 export const updateMe = async (req, res, next) => {
   const updatedUser = await updateUserBasicInfo(req.user._id, req.body);
@@ -16,3 +21,22 @@ export const getAllUsers = async (req, res, next) => {
     data: result,
   });
 };
+
+export async function blockUser(req, res, next) {
+  const id = req.params.userid;
+  const user = await blockUserService(id);
+  res.status(200).json({
+    success: true,
+    messege: "user blocked seccessfully",
+    data: user,
+  });
+}
+export async function unblockUser(req, res, next) {
+  const id = req.params.userid;
+  const user = await unblockUserService(id);
+  res.status(200).json({
+    success: true,
+    messege: "user unblocked seccessfully",
+    data: user,
+  });
+}
