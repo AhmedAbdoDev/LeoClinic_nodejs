@@ -54,6 +54,19 @@ export const deleteAvailabilitySlot = async (req, res) => {
   });
 };
 
+export const deleteAvailability = async (req, res) => {
+  const result = await doctorService.deleteAvailability({
+    doctorId: req.user._id,
+    availabilityId: req.params.availabilityId,
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Availability deleted successfully",
+    data: result,
+  });
+};
+
 export const updateProfile = async (req, res) => {
   const updatedUser = await doctorService.updateDoctorProfile({
     doctorId: req.user._id,
